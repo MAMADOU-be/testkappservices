@@ -1,26 +1,57 @@
 import { MapPin, Clock, Phone } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table";
 
 const agencies = [
   {
     name: "Courcelles",
     address: "Rue Winston Churchill 212A",
     postalCode: "6180 Courcelles",
-    phone: "071 84 01 84",
-    hours: "Lun-Ven: 8h30-12h00 / 13h00-17h00"
-  },
-  {
-    name: "Mont-sur-Marchienne",
-    address: "Rue de la Station 55",
-    postalCode: "6032 Mont-sur-Marchienne",
-    phone: "071 84 01 84",
-    hours: "Lun-Ven: 8h30-12h00 / 13h00-17h00"
+    phone: "071 45 57 45",
+    hours: [
+      { day: "Lundi", time: "07h30 - 18h" },
+      { day: "Mardi", time: "07h30 - 18h" },
+      { day: "Mercredi", time: "07h30 - 18h" },
+      { day: "Jeudi", time: "07h30 - 18h" },
+      { day: "Vendredi", time: "07h30 - 17h" },
+      { day: "Samedi", time: "08h - 12h15" },
+      { day: "Dimanche", time: "Fermé", closed: true },
+    ]
   },
   {
     name: "Lobbes",
-    address: "Place Communale 12",
+    address: "Place Communale 8",
     postalCode: "6540 Lobbes",
-    phone: "071 84 01 84",
-    hours: "Lun-Ven: 8h30-12h00 / 13h00-17h00"
+    phone: "071 45 57 45",
+    hours: [
+      { day: "Lundi", time: "07h30 - 18h" },
+      { day: "Mardi", time: "07h30 - 18h" },
+      { day: "Mercredi", time: "07h30 - 18h" },
+      { day: "Jeudi", time: "07h30 - 18h" },
+      { day: "Vendredi", time: "07h30 - 17h" },
+      { day: "Samedi", time: "08h - 12h15" },
+      { day: "Dimanche", time: "Fermé", closed: true },
+    ]
+  },
+  {
+    name: "Mont-sur-Marchienne",
+    address: "Avenue Paul Pastur 179, cellule F",
+    postalCode: "6032 Mont-sur-Marchienne",
+    note: "Près du Carrefour Market",
+    phone: "071 45 57 45",
+    hours: [
+      { day: "Lundi", time: "08h30 - 12h45 / 13h45 - 18h" },
+      { day: "Mardi", time: "08h30 - 12h45 / 13h45 - 18h" },
+      { day: "Mercredi", time: "08h30 - 12h45 / 13h45 - 18h" },
+      { day: "Jeudi", time: "08h30 - 12h45 / 13h45 - 18h" },
+      { day: "Vendredi", time: "08h30 - 17h" },
+      { day: "Samedi", time: "08h30 - 12h45" },
+      { day: "Dimanche", time: "Fermé", closed: true },
+    ]
   }
 ];
 
@@ -42,39 +73,78 @@ export function Agencies() {
         </div>
 
         {/* Agencies Grid */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-8">
           {agencies.map((agency) => (
             <div
               key={agency.name}
-              className="p-6 rounded-2xl bg-card card-hover border border-border/50"
+              className="rounded-2xl bg-card card-hover border border-border/50 overflow-hidden"
             >
-              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-4">
-                <MapPin className="w-6 h-6 text-primary-foreground" />
+              {/* Header */}
+              <div className="bg-primary p-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary-foreground/20 flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-primary-foreground">
+                    {agency.name}
+                  </h3>
+                </div>
               </div>
-              
-              <h3 className="text-xl font-semibold text-foreground mb-4">
-                {agency.name}
-              </h3>
-              
-              <div className="space-y-3 text-sm">
-                <div className="flex items-start gap-3 text-muted-foreground">
-                  <MapPin className="w-4 h-4 mt-1 text-primary" />
-                  <div>
-                    <p>{agency.address}</p>
-                    <p>{agency.postalCode}</p>
+
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Address */}
+                <div className="space-y-2">
+                  <div className="flex items-start gap-3 text-muted-foreground">
+                    <MapPin className="w-4 h-4 mt-1 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-foreground">{agency.address}</p>
+                      <p>{agency.postalCode}</p>
+                      {agency.note && (
+                        <p className="text-sm italic mt-1">{agency.note}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-                
+
+                {/* Phone */}
                 <div className="flex items-center gap-3 text-muted-foreground">
-                  <Phone className="w-4 h-4 text-primary" />
-                  <a href={`tel:${agency.phone.replace(/\s/g, '')}`} className="hover:text-primary transition-colors">
+                  <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                  <a 
+                    href={`tel:${agency.phone.replace(/\s/g, '')}`} 
+                    className="font-medium text-foreground hover:text-primary transition-colors"
+                  >
                     {agency.phone}
                   </a>
                 </div>
-                
-                <div className="flex items-start gap-3 text-muted-foreground">
-                  <Clock className="w-4 h-4 mt-1 text-primary" />
-                  <p>{agency.hours}</p>
+
+                {/* Hours */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-primary">
+                    <Clock className="w-4 h-4" />
+                    <span className="font-medium text-sm uppercase tracking-wider">Horaires</span>
+                  </div>
+                  
+                  <Table>
+                    <TableBody>
+                      {agency.hours.map((schedule) => (
+                        <TableRow key={schedule.day} className="border-border/30">
+                          <TableCell className="py-2 px-0 font-medium text-foreground">
+                            {schedule.day}
+                          </TableCell>
+                          <TableCell 
+                            className={`py-2 px-0 text-right ${
+                              schedule.closed 
+                                ? 'text-destructive font-medium' 
+                                : 'text-muted-foreground'
+                            }`}
+                          >
+                            {schedule.time}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
             </div>
