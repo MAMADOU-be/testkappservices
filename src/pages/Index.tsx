@@ -6,6 +6,7 @@ import { HowItWorks } from "@/components/HowItWorks";
 import { Agencies } from "@/components/Agencies";
 import { RequestForm } from "@/components/RequestForm";
 import { Recruitment } from "@/components/Recruitment";
+import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 
 const Index = () => {
@@ -20,6 +21,7 @@ const Index = () => {
         <Agencies />
         <RequestForm />
         <Recruitment />
+        <Contact />
       </main>
       <Footer />
     </div>
