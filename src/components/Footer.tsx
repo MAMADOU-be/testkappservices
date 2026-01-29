@@ -59,6 +59,9 @@ export function Footer() {
               <li><a href="#" className="hover:text-primary transition-colors">Mentions légales</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Politique de confidentialité</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Conditions générales</a></li>
+              <li className="pt-2 border-t border-background/10 mt-2">
+                <a href="/auth" className="hover:text-primary transition-colors">Espace employé</a>
+              </li>
             </ul>
           </div>
         </div>
