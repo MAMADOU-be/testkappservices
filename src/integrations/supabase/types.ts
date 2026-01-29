@@ -126,7 +126,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_view_participant: {
+        Args: {
+          p_session_id: string
+          p_target_room_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      is_room_participant: {
+        Args: { p_room_id: string; p_session_id: string; p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
