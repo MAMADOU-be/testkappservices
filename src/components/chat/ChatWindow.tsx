@@ -107,13 +107,21 @@ export const ChatWindow = () => {
       {/* Input area */}
       <form onSubmit={handleSend} className="p-3 border-t">
         <div className="flex gap-2">
-          <Input
-            placeholder="Tapez votre message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            disabled={isSending}
-            className="flex-1"
-          />
+          <div className="flex-1 relative">
+            <Input
+              placeholder="Tapez votre message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              disabled={isSending}
+              maxLength={5000}
+              className="pr-16"
+            />
+            <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs ${
+              newMessage.length > 4500 ? 'text-destructive' : 'text-muted-foreground'
+            }`}>
+              {newMessage.length}/5000
+            </span>
+          </div>
           <Button type="submit" size="icon" disabled={isSending || !newMessage.trim()}>
             {isSending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
