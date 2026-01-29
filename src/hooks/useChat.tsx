@@ -68,11 +68,32 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [error, setError] = useState<string | null>(null);
 
   const getSessionId = useCallback(() => {
-    let sessionId = localStorage.getItem('chat_session_id');
-    if (!sessionId) {
-      sessionId = 'anon_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('chat_session_id', sessionId);
+    const SESSION_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+    
+    try {
+      const stored = localStorage.getItem('chat_session');
+      if (stored) {
+        const sessionData = JSON.parse(stored);
+        // Check if session is still valid
+        if (sessionData.expires && Date.now() < sessionData.expires) {
+          return sessionData.id;
+        }
+        // Session expired, remove it
+        localStorage.removeItem('chat_session');
+      }
+    } catch {
+      // Invalid session data, clear it
+      localStorage.removeItem('chat_session');
     }
+    
+    // Create new cryptographically secure session
+    const sessionId = 'anon_' + crypto.randomUUID();
+    const sessionData = {
+      id: sessionId,
+      created: Date.now(),
+      expires: Date.now() + SESSION_EXPIRY_MS
+    };
+    localStorage.setItem('chat_session', JSON.stringify(sessionData));
     return sessionId;
   }, []);
 
@@ -105,14 +126,19 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     setParticipants((data || []) as ChatParticipant[]);
   }, []);
 
-  const joinOrCreateRoom = useCallback(async (displayName: string, role: 'client' | 'employee' = 'client') => {
+  const joinOrCreateRoom = useCallback(async (displayName: string, requestedRole: 'client' | 'employee' = 'client') => {
     setIsLoading(true);
     setError(null);
     
     try {
+      // Security: Only allow 'employee' role for authenticated users
+      // Anonymous users are always 'client' regardless of requested role
       const { data: authData } = await supabase.auth.getUser();
       const user = authData?.user;
       const sessionId = user ? null : getSessionId();
+      
+      // Enforce role based on authentication status
+      const role: 'client' | 'employee' = user ? requestedRole : 'client';
 
       let room: ChatRoom | null = null;
 
@@ -290,8 +316,18 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     }
   }, [loadMessages, loadParticipants]);
 
+  const MAX_MESSAGE_LENGTH = 5000;
+
   const sendMessage = useCallback(async (content: string) => {
     if (!currentRoom || !currentParticipant || !content.trim()) {
+      return false;
+    }
+
+    const trimmedContent = content.trim();
+    
+    // Client-side validation for message length
+    if (trimmedContent.length > MAX_MESSAGE_LENGTH) {
+      setError(`Message trop long (maximum ${MAX_MESSAGE_LENGTH} caractères)`);
       return false;
     }
 
@@ -301,7 +337,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
         .insert({
           room_id: currentRoom.id,
           participant_id: currentParticipant.id,
-          content: content.trim()
+          content: trimmedContent
         });
 
       if (sendError) throw sendError;
