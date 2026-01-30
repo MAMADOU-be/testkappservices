@@ -1,36 +1,48 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowLeft, User } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Email invalide');
 const passwordSchema = z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères');
+const displayNameSchema = z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(50, 'Le nom ne peut pas dépasser 50 caractères');
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; displayName?: string }>({});
   
-  const { user, isLoading, signIn, signUp } = useAuth();
+  const { user, isLoading: authLoading, signIn, signUp } = useAuth();
+  const { hasAnyRole, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!isLoading && user) {
-      navigate('/admin');
-    }
-  }, [user, isLoading, navigate]);
+  const redirectTo = searchParams.get('redirect') || '/';
 
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {};
+  useEffect(() => {
+    if (!authLoading && !profileLoading && user) {
+      // Redirect employees/admins to admin dashboard
+      if (hasAnyRole(['admin', 'employee'])) {
+        navigate('/admin');
+      } else {
+        navigate(redirectTo);
+      }
+    }
+  }, [user, authLoading, profileLoading, hasAnyRole, navigate, redirectTo]);
+
+  const validateForm = (isSignUp = false) => {
+    const newErrors: { email?: string; password?: string; displayName?: string } = {};
     
     try {
       emailSchema.parse(email);
@@ -48,13 +60,23 @@ const Auth = () => {
       }
     }
     
+    if (isSignUp) {
+      try {
+        displayNameSchema.parse(displayName);
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          newErrors.displayName = e.errors[0].message;
+        }
+      }
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm(false)) return;
     
     setIsSubmitting(true);
     const { error } = await signIn(email, password);
@@ -71,17 +93,17 @@ const Auth = () => {
     } else {
       toast({
         title: 'Connexion réussie',
-        description: 'Bienvenue dans le tableau de bord',
+        description: 'Bienvenue !',
       });
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm(true)) return;
     
     setIsSubmitting(true);
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, displayName);
     setIsSubmitting(false);
     
     if (error) {
@@ -97,12 +119,12 @@ const Auth = () => {
     } else {
       toast({
         title: 'Inscription réussie',
-        description: 'Vous pouvez maintenant vous connecter',
+        description: 'Votre compte a été créé avec succès',
       });
     }
   };
 
-  if (isLoading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -127,9 +149,9 @@ const Auth = () => {
             <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-primary font-bold text-xl">K</span>
             </div>
-            <CardTitle className="text-2xl">Espace Employé</CardTitle>
+            <CardTitle className="text-2xl">Connexion</CardTitle>
             <CardDescription>
-              Connectez-vous pour accéder au tableau de bord
+              Connectez-vous ou créez un compte
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -192,6 +214,24 @@ const Auth = () => {
               
               <TabsContent value="register">
                 <form onSubmit={handleSignUp} className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="register-name">Nom complet</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="register-name"
+                        type="text"
+                        placeholder="Jean Dupont"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.displayName && (
+                      <p className="text-sm text-destructive">{errors.displayName}</p>
+                    )}
+                  </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="register-email">Email</Label>
                     <div className="relative">

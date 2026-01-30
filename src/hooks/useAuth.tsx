@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return { error: error as Error | null };
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -66,6 +66,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       password,
       options: {
         emailRedirectTo: redirectUrl,
+        data: displayName ? { display_name: displayName } : undefined,
       },
     });
     return { error: error as Error | null };
