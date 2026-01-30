@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Loader2, 
@@ -16,7 +18,8 @@ import {
   Send,
   Circle,
   Clock,
-  User as UserIcon
+  User as UserIcon,
+  Settings
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -56,6 +59,7 @@ interface ChatMessage {
 
 const Admin = () => {
   const { user, isLoading: authLoading, signOut } = useAuth();
+  const { profile, hasAnyRole, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -68,12 +72,21 @@ const Admin = () => {
   const [isSending, setIsSending] = useState(false);
   const [employeeParticipant, setEmployeeParticipant] = useState<ChatParticipant | null>(null);
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated or not authorized
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
+    if (!authLoading && !profileLoading) {
+      if (!user) {
+        navigate('/auth');
+      } else if (!hasAnyRole(['admin', 'employee'])) {
+        navigate('/');
+        toast({
+          variant: 'destructive',
+          title: 'Accès refusé',
+          description: 'Vous n\'avez pas les permissions nécessaires',
+        });
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, profileLoading, hasAnyRole, navigate, toast]);
 
   // Load all chat rooms
   const loadRooms = useCallback(async () => {
@@ -310,7 +323,7 @@ const Admin = () => {
     navigate('/');
   };
 
-  if (authLoading || isLoading) {
+  if (authLoading || profileLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -321,24 +334,39 @@ const Admin = () => {
   const clientsInRoom = participants.filter(p => p.role === 'client');
   const employeesInRoom = participants.filter(p => p.role === 'employee');
 
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Employé';
+  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Link to="/" className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
               <span className="text-primary font-bold">K</span>
-            </div>
+            </Link>
             <div>
               <h1 className="font-semibold">Tableau de bord</h1>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
+              <p className="text-xs text-muted-foreground">{displayName}</p>
             </div>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Déconnexion
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link to="/profile">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </Link>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Déconnexion
+            </Button>
+          </div>
         </div>
       </header>
 
