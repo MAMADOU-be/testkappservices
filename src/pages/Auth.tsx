@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, ArrowLeft, User } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowLeft, User, Gift } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Email invalide');
@@ -29,6 +31,7 @@ const Auth = () => {
   const { toast } = useToast();
 
   const redirectTo = searchParams.get('redirect') || '/';
+  const referralCode = searchParams.get('ref');
 
   useEffect(() => {
     if (!authLoading && !profileLoading && user) {
@@ -103,10 +106,10 @@ const Auth = () => {
     if (!validateForm(true)) return;
     
     setIsSubmitting(true);
-    const { error } = await signUp(email, password, displayName);
-    setIsSubmitting(false);
+    const { error, data } = await signUp(email, password, displayName);
     
     if (error) {
+      setIsSubmitting(false);
       let message = error.message;
       if (error.message.includes('already registered')) {
         message = 'Un compte existe déjà avec cet email';
@@ -117,9 +120,23 @@ const Auth = () => {
         description: message,
       });
     } else {
+      // Process referral if code was provided
+      if (referralCode && data?.user) {
+        try {
+          await supabase.rpc('process_referral', {
+            _referred_user_id: data.user.id,
+            _referral_code: referralCode,
+          });
+        } catch (err) {
+          console.error('Error processing referral:', err);
+        }
+      }
+      setIsSubmitting(false);
       toast({
         title: 'Inscription réussie',
-        description: 'Votre compte a été créé avec succès',
+        description: referralCode 
+          ? 'Votre compte a été créé avec succès via parrainage !' 
+          : 'Votre compte a été créé avec succès',
       });
     }
   };
@@ -153,9 +170,15 @@ const Auth = () => {
             <CardDescription>
               Connectez-vous ou créez un compte
             </CardDescription>
+            {referralCode && (
+              <Badge variant="secondary" className="mt-2 gap-1">
+                <Gift className="h-3 w-3" />
+                Code parrain : {referralCode}
+              </Badge>
+            )}
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
+            <Tabs defaultValue={referralCode ? "register" : "login"} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Connexion</TabsTrigger>
                 <TabsTrigger value="register">Inscription</TabsTrigger>

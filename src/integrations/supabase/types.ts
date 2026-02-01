@@ -128,6 +128,8 @@ export type Database = {
           display_name: string | null
           id: string
           phone: string | null
+          referral_code: string | null
+          referred_by: string | null
           updated_at: string
           user_id: string
         }
@@ -137,6 +139,8 @@ export type Database = {
           display_name?: string | null
           id?: string
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
           user_id: string
         }
@@ -146,8 +150,43 @@ export type Database = {
           display_name?: string | null
           id?: string
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_email: string | null
+          referred_id: string | null
+          referrer_id: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_email?: string | null
+          referred_id?: string | null
+          referrer_id: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_email?: string | null
+          referred_id?: string | null
+          referrer_id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -177,6 +216,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_referral_code: { Args: { _user_id: string }; Returns: string }
+      generate_referral_code: { Args: never; Returns: string }
+      get_referral_stats: { Args: { _user_id: string }; Returns: Json }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
@@ -190,6 +232,10 @@ export type Database = {
       }
       is_room_participant: {
         Args: { p_room_id: string; p_session_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      process_referral: {
+        Args: { _referral_code: string; _referred_user_id: string }
         Returns: boolean
       }
       user_can_access_room: {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthResponse } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null; data: AuthResponse['data'] | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         data: displayName ? { display_name: displayName } : undefined,
       },
     });
-    return { error: error as Error | null };
+    return { error: error as Error | null, data };
   }, []);
 
   const signOut = useCallback(async () => {

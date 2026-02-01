@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import ReferralSection from '@/components/profile/ReferralSection';
 import { 
   Loader2, 
   ArrowLeft, 
@@ -269,6 +270,9 @@ const Profile = () => {
             </form>
           </CardContent>
         </Card>
+
+        {/* Referral Section */}
+        <ReferralSection />
 
         {/* Account Info */}
         <Card className="mt-6">
