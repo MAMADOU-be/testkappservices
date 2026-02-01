@@ -5,6 +5,7 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
+import { ScrollAnimation, useStaggeredAnimation } from "@/hooks/useScrollAnimation";
 
 const agencies = [
   {
@@ -56,11 +57,13 @@ const agencies = [
 ];
 
 export function Agencies() {
+  const [agenciesRef, agenciesVisible, getAgencyStyle] = useStaggeredAnimation<HTMLDivElement>(agencies.length, 150);
+
   return (
     <section id="agences" className="section-padding bg-secondary/50">
       <div className="container-narrow mx-auto">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <ScrollAnimation animation="fade-up" className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-primary font-medium text-sm uppercase tracking-wider">
             Proximité
           </span>
@@ -70,14 +73,15 @@ export function Agencies() {
           <p className="text-muted-foreground">
             Présents dans la région de Charleroi, nous sommes proches de vous pour mieux vous servir.
           </p>
-        </div>
+        </ScrollAnimation>
 
         {/* Agencies Grid */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {agencies.map((agency) => (
+        <div ref={agenciesRef} className="grid lg:grid-cols-3 gap-8">
+          {agencies.map((agency, index) => (
             <div
               key={agency.name}
               className="rounded-2xl bg-card card-hover border border-border/50 overflow-hidden"
+              style={getAgencyStyle(index)}
             >
               {/* Header */}
               <div className="bg-primary p-6">

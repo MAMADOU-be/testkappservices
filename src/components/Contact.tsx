@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const formSchema = z.object({
   nom: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
@@ -53,7 +54,7 @@ export function Contact() {
   return (
     <section id="contact" className="section-padding">
       <div className="container-narrow mx-auto px-4">
-        <div className="text-center mb-12">
+        <ScrollAnimation animation="fade-up" className="text-center mb-12">
           <span className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
             Contact
           </span>
@@ -64,11 +65,11 @@ export function Contact() {
             Une question ? N'hésitez pas à nous contacter par téléphone, email ou via le formulaire
             ci-dessous.
           </p>
-        </div>
+        </ScrollAnimation>
 
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Coordonnées */}
-          <div>
+          <ScrollAnimation animation="fade-right" delay={100}>
             <div className="glass-card rounded-2xl p-6 md:p-8 h-full">
               <h3 className="text-xl font-semibold text-foreground mb-6">
                 Kap-Services SRL - Siège administratif
@@ -130,10 +131,10 @@ export function Contact() {
                 </p>
               </div>
             </div>
-          </div>
+          </ScrollAnimation>
 
           {/* Formulaire */}
-          <div>
+          <ScrollAnimation animation="fade-left" delay={200}>
             {isSubmitted ? (
               <div className="glass-card rounded-2xl p-6 md:p-8 h-full flex flex-col items-center justify-center text-center">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
@@ -250,7 +251,7 @@ export function Contact() {
                 </Form>
               </div>
             )}
-          </div>
+          </ScrollAnimation>
         </div>
       </div>
     </section>

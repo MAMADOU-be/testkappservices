@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ScrollAnimation, useStaggeredAnimation } from "@/hooks/useScrollAnimation";
 
 const steps = [
   {
@@ -65,11 +66,13 @@ const workerAdvantages = [
 ];
 
 export function HowItWorks() {
+  const [stepsRef, stepsVisible, getStepStyle] = useStaggeredAnimation<HTMLDivElement>(steps.length, 150);
+
   return (
     <section id="comment" className="section-padding bg-secondary/30">
       <div className="container-narrow mx-auto">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <ScrollAnimation animation="fade-up" className="text-center max-w-2xl mx-auto mb-16">
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             Simple et économique
           </span>
@@ -80,12 +83,12 @@ export function HowItWorks() {
             Le système des titres-services vous permet de bénéficier d'une aide-ménagère déclarée 
             pour un prix avantageux grâce à la déduction fiscale.
           </p>
-        </div>
+        </ScrollAnimation>
 
         {/* Steps */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div ref={stepsRef} className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {steps.map((step, index) => (
-            <div key={step.step} className="relative">
+            <div key={step.step} className="relative" style={getStepStyle(index)}>
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-10 left-full w-full h-0.5 bg-gradient-to-r from-primary/30 to-transparent -translate-x-8" />
               )}
@@ -111,7 +114,7 @@ export function HowItWorks() {
         </div>
 
         {/* Registration Links */}
-        <div className="bg-card rounded-2xl p-6 mb-12 border border-border">
+        <ScrollAnimation animation="fade-up" delay={200} className="bg-card rounded-2xl p-6 mb-12 border border-border">
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <ExternalLink className="w-5 h-5 text-primary" />
             Inscrivez-vous sur Pluxee (gratuit)
@@ -133,9 +136,10 @@ export function HowItWorks() {
           <p className="text-sm text-muted-foreground mt-4">
             Besoin d'aide ? Appelez-nous au <strong className="text-foreground">071 45 57 45</strong> et nous vous inscrirons.
           </p>
-        </div>
+        </ScrollAnimation>
 
         {/* Detailed Accordion */}
+        <ScrollAnimation animation="fade-up" delay={300}>
         <Accordion type="single" collapsible className="mb-12">
           <AccordionItem value="formats" className="bg-card rounded-xl border border-border px-6 mb-3">
             <AccordionTrigger className="hover:no-underline">
@@ -254,9 +258,10 @@ export function HowItWorks() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+        </ScrollAnimation>
 
         {/* Advantages */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <ScrollAnimation animation="fade-up" delay={400} className="grid md:grid-cols-2 gap-6">
           <div className="p-6 rounded-2xl bg-card border border-border">
             <h3 className="text-lg font-semibold text-foreground mb-4">✨ Avantages pour vous</h3>
             <div className="space-y-3">
@@ -283,7 +288,7 @@ export function HowItWorks() {
               ))}
             </div>
           </div>
-        </div>
+        </ScrollAnimation>
       </div>
     </section>
   );
