@@ -10,6 +10,7 @@ import {
   Users,
   Scissors
 } from "lucide-react";
+import { ScrollAnimation, useStaggeredAnimation } from "@/hooks/useScrollAnimation";
 
 const homeServices = [
   "Passer l'aspirateur dans la maison ou l'appartement",
@@ -38,11 +39,14 @@ const guarantees = [
 ];
 
 export function Services() {
+  const [homeServicesRef, homeVisible, getHomeStyle] = useStaggeredAnimation<HTMLDivElement>(homeServices.length, 50);
+  const [externalRef, externalVisible, getExternalStyle] = useStaggeredAnimation<HTMLDivElement>(externalServices.length, 100);
+
   return (
     <section id="services" className="section-padding">
       <div className="container-narrow mx-auto">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <ScrollAnimation animation="fade-up" className="text-center max-w-2xl mx-auto mb-16">
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             Nos services
           </span>
@@ -53,10 +57,10 @@ export function Services() {
             Toutes nos aides-ménagères sont motivées, encadrées et formées au préalable 
             avant d'être envoyées seules chez nos clients.
           </p>
-        </div>
+        </ScrollAnimation>
 
         {/* Home Services */}
-        <div className="mb-16">
+        <ScrollAnimation animation="fade-up" delay={100} className="mb-16">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
               <Home className="w-6 h-6 text-primary" />
@@ -67,21 +71,22 @@ export function Services() {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {homeServices.map((service) => (
+          <div ref={homeServicesRef} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {homeServices.map((service, index) => (
               <div
                 key={service}
                 className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
+                style={getHomeStyle(index)}
               >
                 <Sparkles className="w-5 h-5 text-primary flex-shrink-0" />
                 <span className="text-foreground text-sm">{service}</span>
               </div>
             ))}
           </div>
-        </div>
+        </ScrollAnimation>
 
         {/* External Services */}
-        <div className="mb-16">
+        <ScrollAnimation animation="fade-up" delay={200} className="mb-16">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
               <Scissors className="w-6 h-6 text-accent" />
@@ -92,11 +97,12 @@ export function Services() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {externalServices.map((service) => (
+          <div ref={externalRef} className="grid md:grid-cols-3 gap-6">
+            {externalServices.map((service, index) => (
               <div
                 key={service.title}
                 className="p-6 rounded-2xl bg-card border border-border/50 card-hover"
+                style={getExternalStyle(index)}
               >
                 <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
                   <service.icon className="w-6 h-6 text-accent" />
@@ -106,10 +112,10 @@ export function Services() {
               </div>
             ))}
           </div>
-        </div>
+        </ScrollAnimation>
 
         {/* Ironing Details */}
-        <div className="bg-secondary/50 rounded-2xl p-8 mb-16">
+        <ScrollAnimation animation="fade-up" delay={300} className="bg-secondary/50 rounded-2xl p-8 mb-16">
           <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
             <Shirt className="w-5 h-5 text-primary" />
             Le repassage en atelier
@@ -126,17 +132,17 @@ export function Services() {
               <p><strong className="text-foreground">1 titre-service = 1h00 de repassage</strong>. Un ticket vous est remis après chaque prestation.</p>
             </div>
           </div>
-        </div>
+        </ScrollAnimation>
 
         {/* Guarantees */}
-        <div className="flex flex-wrap justify-center gap-6">
+        <ScrollAnimation animation="fade-up" delay={400} className="flex flex-wrap justify-center gap-6">
           {guarantees.map((item) => (
             <div key={item.text} className="flex items-center gap-3 px-6 py-3 rounded-full bg-primary/5 border border-primary/10">
               <item.icon className="w-5 h-5 text-primary" />
               <span className="text-foreground text-sm font-medium">{item.text}</span>
             </div>
           ))}
-        </div>
+        </ScrollAnimation>
       </div>
     </section>
   );
