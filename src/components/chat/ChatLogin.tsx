@@ -36,7 +36,7 @@ export const ChatLogin = ({ onSubmit, isLoading }: ChatLoginProps) => {
           className="w-full"
           required
         />
-        <Button type="submit" className="w-full" disabled={isLoading || !displayName.trim()}>
+        <Button type="submit" className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg" disabled={isLoading || !displayName.trim()}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

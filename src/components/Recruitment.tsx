@@ -178,7 +178,7 @@ export function Recruitment() {
 
                   <Button
                     onClick={() => setShowForm(true)}
-                    className="bg-white text-primary hover:bg-white/90 rounded-full px-8 py-6 text-base font-semibold"
+                    className="bg-white text-primary hover:bg-white/90 rounded-full px-8 py-6 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   >
                     Postuler maintenant
                     <Send className="ml-2 w-5 h-5" />

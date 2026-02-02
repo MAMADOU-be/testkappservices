@@ -414,7 +414,7 @@ export function RequestForm() {
               </div>
 
               <div className="text-center">
-                <Button type="submit" size="lg" className="btn-accent border-0 px-12">
+                <Button type="submit" size="lg" className="btn-accent border-0 px-12 transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <Send className="w-5 h-5 mr-2" />
                   Envoyer ma demande
                 </Button>
