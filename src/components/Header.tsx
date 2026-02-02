@@ -49,8 +49,8 @@ export function Header() {
               <Phone className="w-4 h-4" />
               <span>071 84 01 84</span>
             </a>
-            <Button className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-              Demander un devis
+            <Button asChild className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+              <a href="#demande">Demander un devis</a>
             </Button>
           </div>
 
@@ -77,8 +77,8 @@ export function Header() {
                   {link.label}
                 </a>
               ))}
-              <Button className="btn-accent border-0 mt-2 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                Demander un devis
+              <Button asChild className="btn-accent border-0 mt-2 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <a href="#demande">Demander un devis</a>
               </Button>
             </div>
           </nav>
