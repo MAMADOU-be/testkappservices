@@ -34,11 +34,11 @@ export function Hero() {
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-4">
-              <Button className="btn-primary border-0 text-base px-8 py-6">
+              <Button className="btn-primary border-0 text-base px-8 py-6 transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 Demander une aide-ménagère
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <Button variant="outline" className="text-base px-8 py-6 rounded-full">
+              <Button variant="outline" className="text-base px-8 py-6 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 Nous recrutons
               </Button>
             </div>
