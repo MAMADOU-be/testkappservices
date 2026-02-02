@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Menu, X, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, X, Phone, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { href: "#accueil", label: "Accueil" },
@@ -14,6 +16,7 @@ const navLinks = [
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-card">
@@ -49,6 +52,12 @@ export function Header() {
               <Phone className="w-4 h-4" />
               <span>071 84 01 84</span>
             </a>
+            <Button asChild variant="outline" className="transition-all duration-300 hover:scale-105">
+              <Link to={user ? "/profile" : "/auth"}>
+                <LogIn className="w-4 h-4 mr-2" />
+                {user ? "Mon compte" : "Se connecter"}
+              </Link>
+            </Button>
             <Button asChild className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
               <a href="#demande">Demander un devis</a>
             </Button>
@@ -77,6 +86,12 @@ export function Header() {
                   {link.label}
                 </a>
               ))}
+              <Button asChild variant="outline" className="mt-2 transition-all duration-300 hover:scale-105">
+                <Link to={user ? "/profile" : "/auth"} onClick={() => setIsOpen(false)}>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  {user ? "Mon compte" : "Se connecter"}
+                </Link>
+              </Button>
               <Button asChild className="btn-accent border-0 mt-2 transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 <a href="#demande">Demander un devis</a>
               </Button>
