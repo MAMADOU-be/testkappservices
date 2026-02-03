@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { ServiceRequestsTable } from '@/components/admin/ServiceRequestsTable';
 import { 
   Loader2, 
   MessageCircle, 
@@ -19,7 +21,7 @@ import {
   Circle,
   Clock,
   User as UserIcon,
-  Settings
+  FileText
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -370,9 +372,28 @@ const Admin = () => {
         </div>
       </header>
 
-      {/* Main content */}
+      {/* Main content with tabs */}
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
+        <Tabs defaultValue="requests" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="requests" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Demandes de service
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Conversations
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab: Service Requests */}
+          <TabsContent value="requests">
+            <ServiceRequestsTable />
+          </TabsContent>
+
+          {/* Tab: Chat */}
+          <TabsContent value="chat">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
           {/* Chat list */}
           <Card className="lg:col-span-1 flex flex-col">
             <CardHeader className="pb-3">
@@ -569,7 +590,9 @@ const Admin = () => {
               </div>
             )}
           </Card>
-        </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
