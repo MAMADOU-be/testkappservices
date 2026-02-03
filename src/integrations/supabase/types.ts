@@ -190,6 +190,69 @@ export type Database = {
         }
         Relationships: []
       }
+      service_requests: {
+        Row: {
+          assigned_to: string | null
+          city: string
+          comments: string | null
+          created_at: string
+          email: string
+          first_name: string
+          frequency: string
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string
+          postal_code: string
+          preferred_day: string | null
+          preferred_time: string | null
+          service_type: string
+          status: string
+          street: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          city: string
+          comments?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          frequency: string
+          id?: string
+          last_name: string
+          notes?: string | null
+          phone: string
+          postal_code: string
+          preferred_day?: string | null
+          preferred_time?: string | null
+          service_type: string
+          status?: string
+          street: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          city?: string
+          comments?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          frequency?: string
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string
+          postal_code?: string
+          preferred_day?: string | null
+          preferred_time?: string | null
+          service_type?: string
+          status?: string
+          street?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

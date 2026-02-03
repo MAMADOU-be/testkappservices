@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Send, Phone, CheckCircle } from "lucide-react";
+import { Send, Phone, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   nom: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
@@ -67,6 +68,7 @@ const heuresOptions = [
 
 export function RequestForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
@@ -90,13 +92,44 @@ export function RequestForm() {
 
   const inscritPluxee = form.watch("inscritPluxee");
 
-  const onSubmit = (data: FormData) => {
-    console.log("Form submitted:", data);
-    setIsSubmitted(true);
-    toast({
-      title: "Demande envoyée !",
-      description: "Nous vous contacterons dans les 24 heures ouvrables.",
-    });
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    
+    try {
+      const { error } = await supabase
+        .from('service_requests')
+        .insert({
+          first_name: data.prenom,
+          last_name: data.nom,
+          email: data.email,
+          phone: data.telephone,
+          street: `${data.rue} ${data.numero}`,
+          city: data.localite,
+          postal_code: data.codePostal,
+          service_type: data.inscritPluxee === 'oui' ? `Pluxee: ${data.numeroPluxee || 'N/A'}` : 'Standard',
+          frequency: `${data.heuresParSemaine}h/semaine`,
+          preferred_day: data.joursPreference.join(', '),
+          comments: data.message || null,
+          status: 'pending',
+        });
+
+      if (error) throw error;
+
+      setIsSubmitted(true);
+      toast({
+        title: "Demande envoyée !",
+        description: "Nous vous contacterons dans les 24 heures ouvrables.",
+      });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -414,9 +447,23 @@ export function RequestForm() {
               </div>
 
               <div className="text-center">
-                <Button type="submit" size="lg" className="btn-accent border-0 px-12 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                  <Send className="w-5 h-5 mr-2" />
-                  Envoyer ma demande
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="btn-accent border-0 px-12 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Envoi en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5 mr-2" />
+                      Envoyer ma demande
+                    </>
+                  )}
                 </Button>
               </div>
             </form>

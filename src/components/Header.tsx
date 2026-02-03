@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Phone, LogIn } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -48,10 +48,6 @@ export function Header() {
 
           {/* CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <a href="tel:+3271840184" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
-              <Phone className="w-4 h-4" />
-              <span>071 84 01 84</span>
-            </a>
             <Button asChild variant="outline" className="transition-all duration-300 hover:scale-105">
               <Link to={user ? "/profile" : "/auth"}>
                 <LogIn className="w-4 h-4 mr-2" />
