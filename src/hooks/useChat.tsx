@@ -176,14 +176,24 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
         }
 
         if (!room) {
-          const { data: newRoom, error: roomError } = await supabase
+          // IMPORTANT: do not request RETURNING data here.
+          // The SELECT policy on chat_rooms requires the user to already be a participant,
+          // and PostgREST will evaluate SELECT RLS when returning inserted rows.
+          const roomId = crypto.randomUUID();
+          const roomName = 'Chat avec ' + displayName;
+
+          const { error: roomError } = await supabase
             .from('chat_rooms')
-            .insert({ name: 'Chat avec ' + displayName })
-            .select()
-            .single();
+            .insert({ id: roomId, name: roomName });
 
           if (roomError) throw roomError;
-          room = newRoom;
+
+          // Temporary local representation; we'll re-fetch after participant creation.
+          room = {
+            id: roomId,
+            name: roomName,
+            created_at: new Date().toISOString()
+          };
         }
       }
 
@@ -236,6 +246,18 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
         participant = newParticipant as ChatParticipant;
       }
 
+      // Now that the user is a participant, they can SELECT the room safely.
+      // (This avoids RLS failures on INSERT ... RETURNING.)
+      const { data: roomAfterJoin } = await supabase
+        .from('chat_rooms')
+        .select('*')
+        .eq('id', room.id)
+        .maybeSingle();
+
+      if (roomAfterJoin) {
+        room = roomAfterJoin;
+      }
+
       setCurrentRoom(room);
       setCurrentParticipant(participant);
 
@@ -259,20 +281,16 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     try {
       const { data: authData } = await supabase.auth.getUser();
       const user = authData?.user;
-      
-      const { data: room, error: roomError } = await supabase
-        .from('chat_rooms')
-        .select('*')
-        .eq('id', roomId)
-        .single();
 
-      if (roomError) throw roomError;
+      if (!user) {
+        throw new Error('Authentication required to join as employee');
+      }
 
       const { data: existingPart } = await supabase
         .from('chat_participants')
         .select('*')
         .eq('room_id', roomId)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .maybeSingle();
 
       let participant: ChatParticipant;
@@ -288,7 +306,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           .from('chat_participants')
           .insert({
             room_id: roomId,
-            user_id: user?.id || null,
+            user_id: user.id,
             display_name: displayName,
             role: 'employee',
             session_id: null,
@@ -300,6 +318,15 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
         if (partError) throw partError;
         participant = newParticipant as ChatParticipant;
       }
+
+      // Fetch the room only after the participant exists (SELECT RLS depends on membership)
+      const { data: room, error: roomError } = await supabase
+        .from('chat_rooms')
+        .select('*')
+        .eq('id', roomId)
+        .single();
+
+      if (roomError) throw roomError;
 
       setCurrentRoom(room);
       setCurrentParticipant(participant);
