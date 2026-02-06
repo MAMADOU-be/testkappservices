@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { MessageCircle, X, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageCircle, X, Minimize2, Maximize2, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWindow } from './ChatWindow';
-import { ChatLogin } from './ChatLogin';
 import { useChat } from '@/hooks/useChat.tsx';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { useNavigate } from 'react-router-dom';
 
 export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const { currentRoom, currentParticipant, isLoading, joinOrCreateRoom, leaveChat } = useChat();
+  const { user } = useAuth();
+  const { profile } = useProfile();
 
   const handleClose = async () => {
     await leaveChat();
@@ -16,7 +20,9 @@ export const ChatWidget = () => {
     setIsMinimized(false);
   };
 
-  const handleStartChat = async (displayName: string) => {
+  const handleStartChat = async () => {
+    if (!user) return;
+    const displayName = profile?.display_name || user.email?.split('@')[0] || 'Utilisateur';
     await joinOrCreateRoom(displayName, 'client');
   };
 
@@ -72,13 +78,61 @@ export const ChatWidget = () => {
       {/* Content */}
       {!isMinimized && (
         <div className="h-[calc(100%-56px)]">
-          {!currentRoom || !currentParticipant ? (
-            <ChatLogin onSubmit={handleStartChat} isLoading={isLoading} />
+          {!user ? (
+            <ChatLoginRequired />
+          ) : !currentRoom || !currentParticipant ? (
+            <ChatStartPrompt onStart={handleStartChat} isLoading={isLoading} displayName={profile?.display_name || user.email?.split('@')[0] || ''} />
           ) : (
             <ChatWindow />
           )}
         </div>
       )}
+    </div>
+  );
+};
+
+const ChatLoginRequired = () => {
+  // Use window.location for navigation since this component is outside Router sometimes
+  const handleGoToAuth = () => {
+    window.location.href = '/auth';
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-6">
+      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+        <LogIn className="h-8 w-8 text-primary" />
+      </div>
+      <h3 className="text-lg font-semibold mb-2">Connexion requise</h3>
+      <p className="text-sm text-muted-foreground text-center mb-6">
+        Connectez-vous ou créez un compte pour discuter avec notre équipe.
+      </p>
+      <Button onClick={handleGoToAuth} className="w-full">
+        <LogIn className="mr-2 h-4 w-4" />
+        Se connecter
+      </Button>
+    </div>
+  );
+};
+
+interface ChatStartPromptProps {
+  onStart: () => Promise<void>;
+  isLoading: boolean;
+  displayName: string;
+}
+
+const ChatStartPrompt = ({ onStart, isLoading, displayName }: ChatStartPromptProps) => {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-6">
+      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+        <MessageCircle className="h-8 w-8 text-primary" />
+      </div>
+      <h3 className="text-lg font-semibold mb-2">Bonjour {displayName} 👋</h3>
+      <p className="text-sm text-muted-foreground text-center mb-6">
+        Démarrez une conversation avec notre équipe. Nous sommes là pour vous aider !
+      </p>
+      <Button onClick={onStart} className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg" disabled={isLoading}>
+        {isLoading ? 'Connexion...' : 'Démarrer le chat'}
+      </Button>
     </div>
   );
 };

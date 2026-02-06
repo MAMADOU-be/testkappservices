@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import ReferralSection from '@/components/profile/ReferralSection';
-import { 
+import EmployeeDashboard from '@/components/profile/EmployeeDashboard';
+import {
   Loader2, 
   ArrowLeft, 
   User, 
@@ -30,7 +31,7 @@ const profileSchema = z.object({
 
 const Profile = () => {
   const { user, isLoading: authLoading, signOut } = useAuth();
-  const { profile, roles, isLoading: profileLoading, updateProfile } = useProfile();
+  const { profile, roles, isLoading: profileLoading, updateProfile, hasAnyRole } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -270,6 +271,9 @@ const Profile = () => {
             </form>
           </CardContent>
         </Card>
+
+        {/* Employee Dashboard - only for employees/admins */}
+        {hasAnyRole(['admin', 'employee']) && <EmployeeDashboard />}
 
         {/* Referral Section */}
         <ReferralSection />
