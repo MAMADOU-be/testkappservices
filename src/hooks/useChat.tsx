@@ -67,35 +67,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getSessionId = useCallback(() => {
-    const SESSION_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
-    
-    try {
-      const stored = localStorage.getItem('chat_session');
-      if (stored) {
-        const sessionData = JSON.parse(stored);
-        // Check if session is still valid
-        if (sessionData.expires && Date.now() < sessionData.expires) {
-          return sessionData.id;
-        }
-        // Session expired, remove it
-        localStorage.removeItem('chat_session');
-      }
-    } catch {
-      // Invalid session data, clear it
-      localStorage.removeItem('chat_session');
-    }
-    
-    // Create new cryptographically secure session
-    const sessionId = 'anon_' + crypto.randomUUID();
-    const sessionData = {
-      id: sessionId,
-      created: Date.now(),
-      expires: Date.now() + SESSION_EXPIRY_MS
-    };
-    localStorage.setItem('chat_session', JSON.stringify(sessionData));
-    return sessionId;
-  }, []);
+  // No more anonymous sessions - all users must be authenticated
 
   const loadMessages = useCallback(async (roomId: string) => {
     const { data, error: fetchError } = await supabase
@@ -131,37 +103,25 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     setError(null);
     
     try {
-      // Security: Only allow 'employee' role for authenticated users
-      // Anonymous users are always 'client' regardless of requested role
       const { data: authData } = await supabase.auth.getUser();
       const user = authData?.user;
-      const sessionId = user ? null : getSessionId();
+
+      if (!user) {
+        throw new Error('Vous devez être connecté pour utiliser le chat');
+      }
       
       // Enforce role based on authentication status
-      const role: 'client' | 'employee' = user ? requestedRole : 'client';
+      const role: 'client' | 'employee' = requestedRole;
 
       let room: ChatRoom | null = null;
 
       if (role === 'client') {
-        let existingParticipant = null;
-        
-        if (user) {
-          const { data } = await supabase
-            .from('chat_participants')
-            .select('room_id')
-            .eq('user_id', user.id)
-            .eq('role', 'client')
-            .maybeSingle();
-          existingParticipant = data;
-        } else if (sessionId) {
-          const { data } = await supabase
-            .from('chat_participants')
-            .select('room_id')
-            .eq('session_id', sessionId)
-            .eq('role', 'client')
-            .maybeSingle();
-          existingParticipant = data;
-        }
+        const { data: existingParticipant } = await supabase
+          .from('chat_participants')
+          .select('room_id')
+          .eq('user_id', user.id)
+          .eq('role', 'client')
+          .maybeSingle();
 
         if (existingParticipant) {
           const { data: existingRoom } = await supabase
@@ -201,24 +161,12 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
         throw new Error('Could not create or find room');
       }
 
-      let existingPart = null;
-      if (user) {
-        const { data } = await supabase
-          .from('chat_participants')
-          .select('*')
-          .eq('room_id', room.id)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        existingPart = data;
-      } else if (sessionId) {
-        const { data } = await supabase
-          .from('chat_participants')
-          .select('*')
-          .eq('room_id', room.id)
-          .eq('session_id', sessionId)
-          .maybeSingle();
-        existingPart = data;
-      }
+      const { data: existingPart } = await supabase
+        .from('chat_participants')
+        .select('*')
+        .eq('room_id', room.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       let participant: ChatParticipant;
 
@@ -233,10 +181,10 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           .from('chat_participants')
           .insert({
             room_id: room.id,
-            user_id: user?.id || null,
+            user_id: user.id,
             display_name: displayName,
             role,
-            session_id: sessionId,
+            session_id: null,
             is_online: true
           })
           .select()
@@ -272,7 +220,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, [getSessionId, loadMessages, loadParticipants]);
+  }, [loadMessages, loadParticipants]);
 
   const joinExistingRoom = useCallback(async (roomId: string, displayName: string) => {
     setIsLoading(true);
