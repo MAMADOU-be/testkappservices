@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Minimize2, Maximize2, LogIn, Settings } from 'lucide-react';
+import { MessageCircle, X, Minimize2, Maximize2, LogIn, Settings, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWindow } from './ChatWindow';
 import { ChatSoundSettings } from './ChatSoundSettings';
@@ -12,7 +12,7 @@ export const ChatWidget = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
-  const { currentRoom, currentParticipant, isLoading, joinOrCreateRoom, leaveChat, unreadCount, resetUnread, notificationSound } = useChat();
+  const { currentRoom, currentParticipant, isLoading, joinOrCreateRoom, leaveChat, unreadCount, resetUnread, notificationSound, browserNotification } = useChat();
   const { user } = useAuth();
   const { profile } = useProfile();
 
@@ -24,6 +24,10 @@ export const ChatWidget = () => {
 
   const handleStartChat = async () => {
     if (!user) return;
+    // Request notification permission when starting chat
+    if (browserNotification.isSupported && browserNotification.permission === 'default') {
+      await browserNotification.requestPermission();
+    }
     const displayName = profile?.display_name || user.email?.split('@')[0] || 'Utilisateur';
     await joinOrCreateRoom(displayName, 'client');
   };
@@ -87,6 +91,17 @@ export const ChatWidget = () => {
           <span className="font-medium">Chat en direct</span>
         </div>
         <div className="flex items-center gap-1">
+          {browserNotification.isSupported && browserNotification.permission !== 'granted' && currentRoom && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 hover:bg-primary-foreground/20 text-primary-foreground"
+              onClick={() => browserNotification.requestPermission()}
+              title="Activer les notifications"
+            >
+              <Bell className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
