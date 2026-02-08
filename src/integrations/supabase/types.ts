@@ -62,6 +62,7 @@ export type Database = {
           id: string
           is_online: boolean | null
           joined_at: string
+          last_read_at: string | null
           last_seen_at: string | null
           role: string
           room_id: string
@@ -73,6 +74,7 @@ export type Database = {
           id?: string
           is_online?: boolean | null
           joined_at?: string
+          last_read_at?: string | null
           last_seen_at?: string | null
           role?: string
           room_id: string
@@ -84,6 +86,7 @@ export type Database = {
           id?: string
           is_online?: boolean | null
           joined_at?: string
+          last_read_at?: string | null
           last_seen_at?: string | null
           role?: string
           room_id?: string

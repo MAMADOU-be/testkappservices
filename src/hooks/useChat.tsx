@@ -46,6 +46,7 @@ interface ChatContextType {
   error: string | null;
   unreadCount: number;
   typingUsers: TypingUser[];
+  employeeLastReadAt: string | null;
   resetUnread: () => void;
   joinOrCreateRoom: (displayName: string, role?: 'client' | 'employee') => Promise<{ room: ChatRoom; participant: ChatParticipant } | null>;
   joinExistingRoom: (roomId: string, displayName: string) => Promise<{ room: ChatRoom; participant: ChatParticipant } | null>;
@@ -53,6 +54,7 @@ interface ChatContextType {
   leaveChat: () => Promise<void>;
   loadMessages: (roomId: string) => Promise<void>;
   loadParticipants: (roomId: string) => Promise<void>;
+  markAsRead: () => Promise<void>;
   broadcastTyping: () => void;
   notificationSound: ReturnType<typeof useNotificationSound>;
 }
@@ -81,6 +83,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [employeeLastReadAt, setEmployeeLastReadAt] = useState<string | null>(null);
   const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const notificationSound = useNotificationSound();
@@ -118,7 +121,17 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
       return;
     }
 
-    setParticipants((data || []) as ChatParticipant[]);
+    const parts = (data || []) as ChatParticipant[];
+    setParticipants(parts);
+    
+    // Track the latest employee last_read_at
+    const employeeReadTimes = parts
+      .filter(p => p.role === 'employee' && (p as any).last_read_at)
+      .map(p => (p as any).last_read_at as string);
+    if (employeeReadTimes.length > 0) {
+      employeeReadTimes.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      setEmployeeLastReadAt(employeeReadTimes[0]);
+    }
   }, []);
 
   const joinOrCreateRoom = useCallback(async (displayName: string, requestedRole: 'client' | 'employee' = 'client') => {
@@ -259,6 +272,16 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     setIsChatVisible(false);
   }, [currentParticipant]);
 
+  // Mark messages as read by updating last_read_at
+  const markAsRead = useCallback(async () => {
+    if (!currentParticipant || !currentRoom) return;
+    const now = new Date().toISOString();
+    await supabase
+      .from('chat_participants')
+      .update({ last_read_at: now } as any)
+      .eq('id', currentParticipant.id);
+  }, [currentParticipant, currentRoom]);
+
   // Broadcast typing indicator
   const broadcastTyping = useCallback(() => {
     if (!typingChannelRef.current || !currentParticipant) return;
@@ -380,6 +403,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     error,
     unreadCount,
     typingUsers,
+    employeeLastReadAt,
     resetUnread,
     joinOrCreateRoom,
     joinExistingRoom,
@@ -387,6 +411,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     leaveChat,
     loadMessages,
     loadParticipants,
+    markAsRead,
     broadcastTyping,
     notificationSound
   };
