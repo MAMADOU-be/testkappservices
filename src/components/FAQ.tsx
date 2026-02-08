@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ScrollAnimation } from '@/hooks/useScrollAnimation';
-import { Receipt, UserCheck } from 'lucide-react';
+import { Receipt, UserCheck, Ticket, Sparkles } from 'lucide-react';
 
 interface FaqItem {
   question: string;
@@ -20,6 +20,58 @@ interface FaqCategory {
 
 const faqCategories: FaqCategory[] = [
   {
+    title: 'Titres-services',
+    icon: Ticket,
+    items: [
+      {
+        question: "Qu'est-ce qu'un titre-service ?",
+        answer:
+          "Le titre-service est un moyen de paiement subventionne par la Region qui vous permet de beneficier d'une aide-menagere agreee a un tarif avantageux. Chaque titre correspond a une heure de prestation. Vous pouvez les commander en format papier ou electronique via Pluxee (anciennement Sodexo).",
+      },
+      {
+        question: "Comment commander des titres-services ?",
+        answer:
+          "Vous devez d'abord vous inscrire aupres de Pluxee via le site de votre Region. En Wallonie, rendez-vous sur le portail Pluxee Wallonie. Une fois inscrit(e), vous pouvez commander vos titres en ligne ou par virement. Le quota annuel est de 500 titres par personne.",
+      },
+      {
+        question: "Quel est le prix d'un titre-service ?",
+        answer:
+          "En Wallonie, le prix est de 10\u20AC par titre-service. Grace a l'avantage fiscal, vous recuperez jusqu'a 1,80\u20AC par titre, ce qui ramene le cout reel a environ 8,20\u20AC de l'heure. A Bruxelles, le prix est de 9\u20AC avec un avantage fiscal similaire.",
+      },
+      {
+        question: "Titres papier ou electroniques, quelle difference ?",
+        answer:
+          "Les titres papier doivent etre remis physiquement a votre aide-menagere a chaque visite. Les titres electroniques (e-titres) sont plus pratiques : ils sont debites automatiquement apres chaque prestation. Nous recommandons le format electronique pour simplifier vos demarches.",
+      },
+    ],
+  },
+  {
+    title: 'Services proposes',
+    icon: Sparkles,
+    items: [
+      {
+        question: "Quels services sont couverts par les titres-services ?",
+        answer:
+          "Les titres-services couvrent le menage a domicile (aspirateur, nettoyage, vaisselle, rangement...), le repassage en atelier ou a domicile, les courses menageres et la preparation de repas. Le transport de personnes a mobilite reduite est egalement couvert.",
+      },
+      {
+        question: "Comment fonctionne le repassage en atelier ?",
+        answer:
+          "Deposez votre linge propre et sec dans l'une de nos agences (Courcelles, Mont-sur-Marchienne ou Lobbes) du lundi au samedi. Nos repasseuses professionnelles s'en occupent et vous le recuperez sous 48h, plie ou sur cintres selon vos preferences. 1 titre-service = 1h de repassage.",
+      },
+      {
+        question: "Puis-je choisir mon aide-menagere ?",
+        answer:
+          "Nous attribuons une aide-menagere fixe a chaque client pour garantir un service personnalise et de confiance. Si le courant ne passe pas, vous pouvez demander un changement et nous trouverons une personne plus adaptee a vos attentes.",
+      },
+      {
+        question: "Quelles sont les zones desservies ?",
+        answer:
+          "Nous intervenons dans la region de Charleroi et ses environs, via nos agences de Courcelles, Mont-sur-Marchienne et Lobbes. Contactez-nous pour verifier que votre adresse est bien dans notre zone de couverture.",
+      },
+    ],
+  },
+  {
     title: 'Facturation',
     icon: Receipt,
     items: [
@@ -27,11 +79,6 @@ const faqCategories: FaqCategory[] = [
         question: 'Comment fonctionne la facturation avec les titres-services ?',
         answer:
           "Chaque heure de prestation correspond a un titre-service. Vous recevez une facture mensuelle recapitulant les prestations effectuees. Le montant a payer est la difference entre le cout total et la valeur des titres-services que vous avez fournis.",
-      },
-      {
-        question: "Quel est le prix d'un titre-service ?",
-        answer:
-          "Le prix d'un titre-service varie entre 10\u20AC et 12\u20AC selon votre region. En Wallonie, il est de 10\u20AC par titre. De plus, vous beneficiez d'un avantage fiscal pouvant aller jusqu'a 1,80\u20AC par titre, ce qui reduit le cout reel de la prestation.",
       },
       {
         question: 'Quand dois-je payer mes factures ?',
@@ -42,6 +89,11 @@ const faqCategories: FaqCategory[] = [
         question: "Que se passe-t-il si je n'ai plus de titres-services disponibles ?",
         answer:
           "Si vous avez epuise votre quota annuel de titres-services, les heures supplementaires seront facturees au tarif complementaire. Nous vous informerons a l'avance si vous approchez de votre limite pour eviter toute surprise.",
+      },
+      {
+        question: "Quel est l'avantage fiscal des titres-services ?",
+        answer:
+          "En Wallonie, vous beneficiez d'une deduction fiscale de 1,80\u20AC par titre (sur les 150 premiers titres). A Bruxelles, l'avantage est de 1,35\u20AC par titre. Ces montants sont automatiquement pris en compte lors de votre declaration fiscale annuelle.",
       },
     ],
   },
