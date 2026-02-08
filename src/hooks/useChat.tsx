@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 
@@ -31,6 +31,12 @@ interface ChatRoom {
   created_at: string;
 }
 
+interface TypingUser {
+  participantId: string;
+  displayName: string;
+  role: string;
+}
+
 interface ChatContextType {
   messages: ChatMessage[];
   participants: ChatParticipant[];
@@ -39,6 +45,7 @@ interface ChatContextType {
   isLoading: boolean;
   error: string | null;
   unreadCount: number;
+  typingUsers: TypingUser[];
   resetUnread: () => void;
   joinOrCreateRoom: (displayName: string, role?: 'client' | 'employee') => Promise<{ room: ChatRoom; participant: ChatParticipant } | null>;
   joinExistingRoom: (roomId: string, displayName: string) => Promise<{ room: ChatRoom; participant: ChatParticipant } | null>;
@@ -46,6 +53,7 @@ interface ChatContextType {
   leaveChat: () => Promise<void>;
   loadMessages: (roomId: string) => Promise<void>;
   loadParticipants: (roomId: string) => Promise<void>;
+  broadcastTyping: () => void;
   notificationSound: ReturnType<typeof useNotificationSound>;
 }
 
@@ -72,6 +80,9 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isChatVisible, setIsChatVisible] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const notificationSound = useNotificationSound();
 
   const resetUnread = useCallback(() => {
@@ -248,8 +259,54 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     setIsChatVisible(false);
   }, [currentParticipant]);
 
+  // Broadcast typing indicator
+  const broadcastTyping = useCallback(() => {
+    if (!typingChannelRef.current || !currentParticipant) return;
+    typingChannelRef.current.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: {
+        participantId: currentParticipant.id,
+        displayName: currentParticipant.display_name,
+        role: currentParticipant.role,
+      },
+    });
+  }, [currentParticipant]);
+
+  // Subscribe to typing broadcast + messages + participants
   useEffect(() => {
     if (!currentRoom) return;
+
+    // Typing broadcast channel
+    const typingChannel = supabase
+      .channel('typing-' + currentRoom.id)
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        if (payload.participantId === currentParticipant?.id) return;
+
+        const user: TypingUser = {
+          participantId: payload.participantId,
+          displayName: payload.displayName,
+          role: payload.role,
+        };
+
+        setTypingUsers(prev => {
+          const exists = prev.some(u => u.participantId === user.participantId);
+          return exists ? prev : [...prev, user];
+        });
+
+        // Clear previous timeout for this user
+        const prev = typingTimeouts.current.get(user.participantId);
+        if (prev) clearTimeout(prev);
+
+        const timeout = setTimeout(() => {
+          setTypingUsers(p => p.filter(u => u.participantId !== user.participantId));
+          typingTimeouts.current.delete(user.participantId);
+        }, 3000);
+        typingTimeouts.current.set(user.participantId, timeout);
+      })
+      .subscribe();
+
+    typingChannelRef.current = typingChannel;
 
     const messagesChannel = supabase
       .channel('messages-' + currentRoom.id)
@@ -274,6 +331,9 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           } as ChatMessage;
 
           setMessages(prev => [...prev, newMessage]);
+
+          // Remove sender from typing users
+          setTypingUsers(p => p.filter(u => u.participantId !== payload.new.participant_id));
 
           // Increment unread & play sound if message is from employee and chat is not visible
           if (participantData?.role === 'employee') {
@@ -301,10 +361,15 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
       .subscribe();
 
     return () => {
+      typingChannelRef.current = null;
+      supabase.removeChannel(typingChannel);
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(participantsChannel);
+      typingTimeouts.current.forEach(t => clearTimeout(t));
+      typingTimeouts.current.clear();
+      setTypingUsers([]);
     };
-  }, [currentRoom, loadParticipants]);
+  }, [currentRoom, currentParticipant?.id, loadParticipants]);
 
   const value: ChatContextType = {
     messages,
@@ -314,6 +379,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     isLoading,
     error,
     unreadCount,
+    typingUsers,
     resetUnread,
     joinOrCreateRoom,
     joinExistingRoom,
@@ -321,6 +387,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     leaveChat,
     loadMessages,
     loadParticipants,
+    broadcastTyping,
     notificationSound
   };
 

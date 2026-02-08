@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,10 +8,11 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export const ChatWindow = () => {
-  const { messages, currentParticipant, sendMessage, participants } = useChat();
+  const { messages, currentParticipant, sendMessage, participants, typingUsers, broadcastTyping } = useChat();
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const typingThrottle = useRef<number>(0);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -31,6 +32,15 @@ export const ChatWindow = () => {
     }
     setIsSending(false);
   };
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    const now = Date.now();
+    if (now - typingThrottle.current > 2000) {
+      typingThrottle.current = now;
+      broadcastTyping();
+    }
+  }, [broadcastTyping]);
 
   const onlineEmployees = participants.filter(p => p.role === 'employee' && p.is_online);
 
@@ -104,6 +114,20 @@ export const ChatWindow = () => {
         )}
       </ScrollArea>
 
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <div className="px-4 py-1.5 border-t border-b-0">
+          <p className="text-xs text-muted-foreground italic flex items-center gap-1">
+            <span className="flex gap-0.5">
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </span>
+            {typingUsers.map(u => u.displayName).join(', ')} est en train d'écrire...
+          </p>
+        </div>
+      )}
+
       {/* Input area */}
       <form onSubmit={handleSend} className="p-3 border-t">
         <div className="flex gap-2">
@@ -111,7 +135,7 @@ export const ChatWindow = () => {
             <Input
               placeholder="Tapez votre message..."
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={handleInputChange}
               disabled={isSending}
               maxLength={5000}
               className="pr-16"
