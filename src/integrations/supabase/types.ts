@@ -279,6 +279,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_chat_room_and_join: {
+        Args: { p_display_name: string; p_role?: string; p_room_name: string }
+        Returns: Json
+      }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_referral_stats: { Args: { _user_id: string }; Returns: Json }
@@ -296,6 +300,10 @@ export type Database = {
       is_room_participant: {
         Args: { p_room_id: string; p_session_id: string; p_user_id: string }
         Returns: boolean
+      }
+      join_chat_room: {
+        Args: { p_display_name: string; p_role?: string; p_room_id: string }
+        Returns: Json
       }
       process_referral: {
         Args: { _referral_code: string; _referred_user_id: string }
