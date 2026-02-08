@@ -11,6 +11,7 @@ import ReferralSection from '@/components/profile/ReferralSection';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { ServiceRequestsTable } from '@/components/admin/ServiceRequestsTable';
 import { AdminChatView } from '@/components/admin/AdminChatView';
+import { UserManagement } from '@/components/admin/UserManagement';
 import {
   Loader2,
   ArrowLeft,
@@ -22,6 +23,7 @@ import {
   MessageCircle,
   Gift,
   Settings,
+  Users,
 } from 'lucide-react';
 
 const Profile = () => {
@@ -31,6 +33,7 @@ const Profile = () => {
   const { toast } = useToast();
 
   const isStaff = hasAnyRole(['admin', 'employee']);
+  const isAdmin = hasAnyRole(['admin']);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -116,7 +119,7 @@ const Profile = () => {
 
       <div className="container mx-auto px-4 py-4">
         <Tabs defaultValue={isStaff ? 'requests' : 'profile'} className="space-y-4">
-          <TabsList className={`grid w-full max-w-lg ${isStaff ? 'grid-cols-4' : 'grid-cols-2'}`}>
+          <TabsList className={`grid w-full max-w-xl ${isAdmin ? 'grid-cols-5' : isStaff ? 'grid-cols-4' : 'grid-cols-2'}`}>
             {isStaff && (
               <>
                 <TabsTrigger value="requests" className="flex items-center gap-1.5 text-xs">
@@ -128,6 +131,12 @@ const Profile = () => {
                   <span className="hidden sm:inline">Chat</span>
                 </TabsTrigger>
               </>
+            )}
+            {isAdmin && (
+              <TabsTrigger value="users" className="flex items-center gap-1.5 text-xs">
+                <Users className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Utilisateurs</span>
+              </TabsTrigger>
             )}
             <TabsTrigger value="profile" className="flex items-center gap-1.5 text-xs">
               <Settings className="h-3.5 w-3.5" />
@@ -148,6 +157,12 @@ const Profile = () => {
                 <AdminChatView />
               </TabsContent>
             </>
+          )}
+
+          {isAdmin && (
+            <TabsContent value="users">
+              <UserManagement />
+            </TabsContent>
           )}
 
           <TabsContent value="profile">

@@ -291,6 +291,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _target_user_id: string
+        }
+        Returns: boolean
+      }
+      admin_remove_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _target_user_id: string
+        }
+        Returns: boolean
+      }
       create_chat_room_and_join: {
         Args: { p_display_name: string; p_role?: string; p_room_name: string }
         Returns: Json
