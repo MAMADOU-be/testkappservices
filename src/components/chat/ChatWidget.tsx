@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { MessageCircle, X, Minimize2, Maximize2, LogIn } from 'lucide-react';
+import { MessageCircle, X, Minimize2, Maximize2, LogIn, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWindow } from './ChatWindow';
+import { ChatSoundSettings } from './ChatSoundSettings';
 import { useChat } from '@/hooks/useChat.tsx';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useNavigate } from 'react-router-dom';
 
 export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const { currentRoom, currentParticipant, isLoading, joinOrCreateRoom, leaveChat, unreadCount, resetUnread } = useChat();
+  const [showSettings, setShowSettings] = useState(false);
+  const { currentRoom, currentParticipant, isLoading, joinOrCreateRoom, leaveChat, unreadCount, resetUnread, notificationSound } = useChat();
   const { user } = useAuth();
   const { profile } = useProfile();
 
@@ -72,6 +73,14 @@ export const ChatWidget = () => {
             variant="ghost"
             size="icon"
             className="h-7 w-7 hover:bg-primary-foreground/20 text-primary-foreground"
+            onClick={() => setShowSettings(prev => !prev)}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 hover:bg-primary-foreground/20 text-primary-foreground"
             onClick={handleToggleMinimize}
           >
             {isMinimized ? (
@@ -94,7 +103,14 @@ export const ChatWidget = () => {
       {/* Content */}
       {!isMinimized && (
         <div className="h-[calc(100%-56px)]">
-          {!user ? (
+          {showSettings ? (
+            <ChatSoundSettings
+              settings={notificationSound.settings}
+              onApplyPreset={notificationSound.applyPreset}
+              onUpdateSetting={notificationSound.updateSetting}
+              onPlayTest={notificationSound.playSound}
+            />
+          ) : !user ? (
             <ChatLoginRequired />
           ) : !currentRoom || !currentParticipant ? (
             <ChatStartPrompt onStart={handleStartChat} isLoading={isLoading} displayName={profile?.display_name || user.email?.split('@')[0] || ''} />

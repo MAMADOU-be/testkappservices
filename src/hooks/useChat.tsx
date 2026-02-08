@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 interface ChatMessage {
   id: string;
@@ -45,6 +46,7 @@ interface ChatContextType {
   leaveChat: () => Promise<void>;
   loadMessages: (roomId: string) => Promise<void>;
   loadParticipants: (roomId: string) => Promise<void>;
+  notificationSound: ReturnType<typeof useNotificationSound>;
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -70,27 +72,11 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isChatVisible, setIsChatVisible] = useState(false);
+  const notificationSound = useNotificationSound();
 
   const resetUnread = useCallback(() => {
     setUnreadCount(0);
     setIsChatVisible(true);
-  }, []);
-
-  const playNotificationSound = useCallback(() => {
-    try {
-      const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 800;
-      gain.gain.value = 0.15;
-      osc.start();
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-      osc.stop(ctx.currentTime + 0.3);
-    } catch {
-      // Audio not available
-    }
   }, []);
 
   // No more anonymous sessions - all users must be authenticated
@@ -292,7 +278,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           // Increment unread & play sound if message is from employee and chat is not visible
           if (participantData?.role === 'employee') {
             setUnreadCount(prev => prev + 1);
-            playNotificationSound();
+            notificationSound.playSound();
           }
         }
       )
@@ -334,7 +320,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     sendMessage,
     leaveChat,
     loadMessages,
-    loadParticipants
+    loadParticipants,
+    notificationSound
   };
 
   return (
