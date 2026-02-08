@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { Send, Loader2, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export const ChatWindow = () => {
-  const { messages, currentParticipant, sendMessage, participants, typingUsers, broadcastTyping } = useChat();
+  const { messages, currentParticipant, sendMessage, participants, typingUsers, broadcastTyping, employeeLastReadAt, markAsRead } = useChat();
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -20,6 +20,13 @@ export const ChatWindow = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Mark messages as read when viewing
+  useEffect(() => {
+    if (messages.length > 0 && currentParticipant) {
+      markAsRead();
+    }
+  }, [messages.length, currentParticipant, markAsRead]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,9 +87,25 @@ export const ChatWindow = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {messages.map((message) => {
+            {messages.map((message, index) => {
               const isOwn = message.participant_id === currentParticipant?.id;
               const isEmployee = message.participant?.role === 'employee';
+              const isClientMessage = !isEmployee;
+
+              // Show "Vu à" only on the last client message that has been read by an employee
+              const isRead = isClientMessage && employeeLastReadAt && 
+                new Date(message.created_at) <= new Date(employeeLastReadAt);
+              const isLastReadClient = isRead && (() => {
+                // Check if this is the last client message before employeeLastReadAt
+                for (let i = index + 1; i < messages.length; i++) {
+                  const next = messages[i];
+                  if (next.participant?.role !== 'employee' && 
+                      new Date(next.created_at) <= new Date(employeeLastReadAt!)) {
+                    return false;
+                  }
+                }
+                return true;
+              })();
 
               return (
                 <div
@@ -104,9 +127,17 @@ export const ChatWindow = () => {
                   >
                     <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground mt-1">
-                    {format(new Date(message.created_at), 'HH:mm', { locale: fr })}
-                  </span>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(message.created_at), 'HH:mm', { locale: fr })}
+                    </span>
+                    {isLastReadClient && (
+                      <span className="flex items-center gap-0.5 text-xs text-primary">
+                        <CheckCheck className="h-3 w-3" />
+                        <span>Vu à {format(new Date(employeeLastReadAt!), 'HH:mm', { locale: fr })}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}
