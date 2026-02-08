@@ -521,15 +521,31 @@ const Admin = () => {
                                     <p className="whitespace-pre-wrap break-words mb-1">{message.content}</p>
                                   )}
                                   {message.file_type?.startsWith('image/') ? (
-                                    <a href={message.file_url} target="_blank" rel="noopener noreferrer" className="block mt-1">
-                                      <img src={message.file_url} alt={message.file_name || 'Image'} className="max-w-full max-h-48 rounded-md object-contain" />
+                                    <a href={message.file_url!} className="block mt-1 cursor-pointer" onClick={(e) => {
+                                      e.preventDefault();
+                                      fetch(message.file_url!).then(r => r.blob()).then(blob => {
+                                        window.open(URL.createObjectURL(blob), '_blank');
+                                      }).catch(() => window.open(message.file_url!, '_blank'));
+                                    }}>
+                                      <img src={message.file_url!} alt={message.file_name || 'Image'} className="max-w-full max-h-48 rounded-md object-contain" />
                                     </a>
                                   ) : (
                                     <a
-                                      href={message.file_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-2 mt-1 text-xs underline opacity-80 hover:opacity-100"
+                                      href={message.file_url!}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        fetch(message.file_url!).then(r => r.blob()).then(blob => {
+                                          const blobUrl = URL.createObjectURL(blob);
+                                          const a = document.createElement('a');
+                                          a.href = blobUrl;
+                                          a.download = message.file_name || 'Fichier';
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          document.body.removeChild(a);
+                                          URL.revokeObjectURL(blobUrl);
+                                        }).catch(() => window.open(message.file_url!, '_blank'));
+                                      }}
+                                      className="flex items-center gap-2 mt-1 text-xs underline opacity-80 hover:opacity-100 cursor-pointer"
                                     >
                                       <FileText className="h-4 w-4" />
                                       {message.file_name || 'Fichier'}

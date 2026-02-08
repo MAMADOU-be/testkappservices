@@ -31,9 +31,33 @@ const FilePreview = ({ file, onRemove }: { file: File; onRemove: () => void }) =
 const MessageFileAttachment = ({ fileUrl, fileName, fileType }: { fileUrl: string; fileName: string; fileType: string }) => {
   const isImage = fileType?.startsWith('image/');
 
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: open directly
+      window.open(fileUrl, '_blank');
+    }
+  };
+
   if (isImage) {
     return (
-      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="block mt-1">
+      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="block mt-1" onClick={(e) => {
+        e.preventDefault();
+        fetch(fileUrl).then(r => r.blob()).then(blob => {
+          window.open(URL.createObjectURL(blob), '_blank');
+        }).catch(() => window.open(fileUrl, '_blank'));
+      }}>
         <img src={fileUrl} alt={fileName} className="max-w-full max-h-48 rounded-md object-contain" />
       </a>
     );
@@ -42,9 +66,8 @@ const MessageFileAttachment = ({ fileUrl, fileName, fileType }: { fileUrl: strin
   return (
     <a
       href={fileUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2 mt-1 text-xs underline opacity-80 hover:opacity-100"
+      onClick={handleDownload}
+      className="flex items-center gap-2 mt-1 text-xs underline opacity-80 hover:opacity-100 cursor-pointer"
     >
       <FileText className="h-4 w-4" />
       {fileName}
