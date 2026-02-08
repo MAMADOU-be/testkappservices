@@ -120,7 +120,7 @@ export function Services() {
             <Shirt className="w-5 h-5 text-primary" />
             Le repassage en atelier
           </h3>
-          <div className="grid md:grid-cols-2 gap-6 text-sm text-muted-foreground">
+          <div className="grid md:grid-cols-2 gap-6 text-sm text-muted-foreground mb-8">
             <div>
               <p className="mb-3">Le repassage est effectué par des <strong className="text-foreground">repasseuses professionnelles</strong> et soignées.</p>
               <p className="mb-3">Déposez vos mannes du <strong className="text-foreground">lundi au samedi</strong> dans nos agences de Courcelles, Mont-sur-Marchienne ou Lobbes.</p>
@@ -131,6 +131,53 @@ export function Services() {
               <p className="mb-3">Vêtements pliés ou mis sur cintres selon votre demande.</p>
               <p><strong className="text-foreground">1 titre-service = 1h00 de repassage</strong>. Un ticket vous est remis après chaque prestation.</p>
             </div>
+          </div>
+
+          {/* Barème de points */}
+          <div>
+            <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              Barème de points
+              <span className="text-xs font-normal text-muted-foreground">(1 point = 1 minute de repassage)</span>
+            </h4>
+            <div className="overflow-x-auto rounded-xl border border-border/50">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-primary/10">
+                    <th className="text-left px-4 py-3 font-semibold text-foreground">Article</th>
+                    <th className="text-center px-4 py-3 font-semibold text-foreground">Points</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { article: "Chemise / Chemisier", points: 5 },
+                    { article: "T-shirt / Polo", points: 3 },
+                    { article: "Pantalon / Jean", points: 4 },
+                    { article: "Jupe", points: 3 },
+                    { article: "Robe simple", points: 5 },
+                    { article: "Robe habillée", points: 8 },
+                    { article: "Veste / Blazer", points: 6 },
+                    { article: "Pull / Sweat", points: 3 },
+                    { article: "Drap (1 personne)", points: 4 },
+                    { article: "Drap (2 personnes)", points: 6 },
+                    { article: "Housse de couette", points: 8 },
+                    { article: "Nappe", points: 5 },
+                    { article: "Taie d'oreiller", points: 2 },
+                    { article: "Serviette de table", points: 1 },
+                  ].map((item, index) => (
+                    <tr
+                      key={item.article}
+                      className={index % 2 === 0 ? "bg-card" : "bg-secondary/30"}
+                    >
+                      <td className="px-4 py-2.5 text-foreground">{item.article}</td>
+                      <td className="px-4 py-2.5 text-center font-medium text-primary">{item.points}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground italic">
+              * Ce barème est indicatif. 1 titre-service correspond à 60 points (1h de repassage).
+            </p>
           </div>
         </ScrollAnimation>
 
