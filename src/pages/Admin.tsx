@@ -7,8 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { ServiceRequestsTable } from '@/components/admin/ServiceRequestsTable';
-import { AdminChatView } from '@/components/admin/AdminChatView';
-import { Loader2, LogOut, FileText, MessageCircle } from 'lucide-react';
+import { Loader2, LogOut, FileText } from 'lucide-react';
 
 const Admin = () => {
   const { user, isLoading: authLoading, signOut } = useAuth();
@@ -49,7 +48,6 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Header */}
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -82,23 +80,15 @@ const Admin = () => {
 
       <div className="container mx-auto px-4 py-4">
         <Tabs defaultValue="requests" className="space-y-4">
-          <TabsList className="grid w-full max-w-sm grid-cols-2">
+          <TabsList>
             <TabsTrigger value="requests" className="flex items-center gap-2 text-xs">
               <FileText className="h-3.5 w-3.5" />
               Demandes
-            </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center gap-2 text-xs">
-              <MessageCircle className="h-3.5 w-3.5" />
-              Conversations
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests">
             <ServiceRequestsTable />
-          </TabsContent>
-
-          <TabsContent value="chat">
-            <AdminChatView />
           </TabsContent>
         </Tabs>
       </div>
