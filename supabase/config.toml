@@ -1,1 +1,4 @@
 project_id = "pyozqcxrkptaagonrrwc"
+
+[functions.submit-service-request]
+verify_jwt = false
