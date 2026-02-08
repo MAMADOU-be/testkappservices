@@ -91,8 +91,14 @@ export function RequestForm() {
   });
 
   const inscritPluxee = form.watch("inscritPluxee");
+  const [honeypot, setHoneypot] = useState("");
 
   const onSubmit = async (data: FormData) => {
+    // Honeypot anti-spam check
+    if (honeypot) {
+      setIsSubmitted(true);
+      return;
+    }
     setIsSubmitting(true);
     
     try {
@@ -446,8 +452,22 @@ export function RequestForm() {
                 />
               </div>
 
+              {/* Honeypot anti-spam field */}
+              <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
+                <label htmlFor="website">Website</label>
+                <input
+                  id="website"
+                  name="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
+
               <div className="text-center">
-                <Button 
+                <Button
                   type="submit" 
                   size="lg" 
                   className="btn-accent border-0 px-12 transition-all duration-300 hover:scale-105 hover:shadow-lg"
