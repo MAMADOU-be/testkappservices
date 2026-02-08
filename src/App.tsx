@@ -10,9 +10,9 @@ import { ChatWidget } from "@/components/chat";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
@@ -30,11 +30,7 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route 
                   path="/admin" 
-                  element={
-                    <ProtectedRoute requiredRoles={['admin', 'employee']}>
-                      <Admin />
-                    </ProtectedRoute>
-                  } 
+                  element={<Navigate to="/profile" replace />} 
                 />
                 <Route 
                   path="/profile" 
