@@ -394,12 +394,12 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           // Remove sender from typing users
           setTypingUsers(p => p.filter(u => u.participantId !== payload.new.participant_id));
 
-          // Increment unread & play sound & push notification if message is from employee
-          if (participantData?.role === 'employee') {
+          // Play sound & push notification for messages from others
+          if (payload.new.participant_id !== currentParticipant?.id) {
             setUnreadCount(prev => prev + 1);
             notificationSound.playSound();
             browserNotification.sendNotification('Nouveau message', {
-              body: `${participantData.display_name}: ${(payload.new as any).content?.substring(0, 100)}`,
+              body: `${participantData?.display_name}: ${(payload.new as any).content?.substring(0, 100)}`,
               tag: 'chat-message',
             });
           }
