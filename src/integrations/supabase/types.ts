@@ -14,125 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      chat_messages: {
-        Row: {
-          content: string
-          created_at: string
-          file_name: string | null
-          file_type: string | null
-          file_url: string | null
-          id: string
-          is_read: boolean | null
-          participant_id: string
-          room_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          file_name?: string | null
-          file_type?: string | null
-          file_url?: string | null
-          id?: string
-          is_read?: boolean | null
-          participant_id: string
-          room_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          file_name?: string | null
-          file_type?: string | null
-          file_url?: string | null
-          id?: string
-          is_read?: boolean | null
-          participant_id?: string
-          room_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_messages_participant_id_fkey"
-            columns: ["participant_id"]
-            isOneToOne: false
-            referencedRelation: "chat_participants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chat_messages_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "chat_rooms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      chat_participants: {
-        Row: {
-          display_name: string
-          id: string
-          is_online: boolean | null
-          joined_at: string
-          last_read_at: string | null
-          last_seen_at: string | null
-          role: string
-          room_id: string
-          session_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          display_name: string
-          id?: string
-          is_online?: boolean | null
-          joined_at?: string
-          last_read_at?: string | null
-          last_seen_at?: string | null
-          role?: string
-          room_id: string
-          session_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          display_name?: string
-          id?: string
-          is_online?: boolean | null
-          joined_at?: string
-          last_read_at?: string | null
-          last_seen_at?: string | null
-          role?: string
-          room_id?: string
-          session_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_participants_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "chat_rooms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      chat_rooms: {
-        Row: {
-          created_at: string
-          id: string
-          name: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -305,10 +186,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      create_chat_room_and_join: {
-        Args: { p_display_name: string; p_role?: string; p_room_name: string }
-        Returns: Json
-      }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_referral_stats: { Args: { _user_id: string }; Returns: Json }
@@ -323,20 +200,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_room_participant: {
-        Args: { p_room_id: string; p_session_id: string; p_user_id: string }
-        Returns: boolean
-      }
-      join_chat_room: {
-        Args: { p_display_name: string; p_role?: string; p_room_id: string }
-        Returns: Json
-      }
       process_referral: {
         Args: { _referral_code: string; _referred_user_id: string }
-        Returns: boolean
-      }
-      user_can_access_room: {
-        Args: { check_room_id: string }
         Returns: boolean
       }
     }
