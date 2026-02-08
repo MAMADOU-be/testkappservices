@@ -198,39 +198,15 @@ const Admin = () => {
     }
   }, [user]);
 
-  // Join room as employee
+  // Join room as employee using secure RPC function
   const joinRoomAsEmployee = useCallback(async (roomId: string) => {
     if (!user) return null;
 
-    // Check if already a participant
-    const { data: existing } = await supabase
-      .from('chat_participants')
-      .select('*')
-      .eq('room_id', roomId)
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (existing) {
-      // Update online status
-      await supabase
-        .from('chat_participants')
-        .update({ is_online: true, last_seen_at: new Date().toISOString() })
-        .eq('id', existing.id);
-      return existing as ChatParticipant;
-    }
-
-    // Create new participant as employee
-    const { data: newParticipant, error } = await supabase
-      .from('chat_participants')
-      .insert({
-        room_id: roomId,
-        user_id: user.id,
-        display_name: user.email?.split('@')[0] || 'Employé',
-        role: 'employee',
-        is_online: true,
-      })
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc('join_chat_room', {
+      p_room_id: roomId,
+      p_display_name: user.email?.split('@')[0] || 'Employé',
+      p_role: 'employee',
+    });
 
     if (error) {
       console.error('Error joining room:', error);
@@ -242,7 +218,7 @@ const Admin = () => {
       return null;
     }
 
-    return newParticipant as ChatParticipant;
+    return data as unknown as ChatParticipant;
   }, [user, toast]);
 
   // Select a room
