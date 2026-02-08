@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { useBrowserNotification } from '@/hooks/useBrowserNotification';
 
 interface ChatMessage {
   id: string;
@@ -57,6 +58,7 @@ interface ChatContextType {
   markAsRead: () => Promise<void>;
   broadcastTyping: () => void;
   notificationSound: ReturnType<typeof useNotificationSound>;
+  browserNotification: ReturnType<typeof useBrowserNotification>;
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -87,6 +89,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const notificationSound = useNotificationSound();
+  const browserNotification = useBrowserNotification();
 
   const resetUnread = useCallback(() => {
     setUnreadCount(0);
@@ -358,10 +361,14 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           // Remove sender from typing users
           setTypingUsers(p => p.filter(u => u.participantId !== payload.new.participant_id));
 
-          // Increment unread & play sound if message is from employee and chat is not visible
+          // Increment unread & play sound & push notification if message is from employee
           if (participantData?.role === 'employee') {
             setUnreadCount(prev => prev + 1);
             notificationSound.playSound();
+            browserNotification.sendNotification('Nouveau message', {
+              body: `${participantData.display_name}: ${(payload.new as any).content?.substring(0, 100)}`,
+              tag: 'chat-message',
+            });
           }
         }
       )
@@ -413,7 +420,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     loadParticipants,
     markAsRead,
     broadcastTyping,
-    notificationSound
+    notificationSound,
+    browserNotification
   };
 
   return (
