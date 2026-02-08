@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Minimize2, Maximize2, LogIn, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWindow } from './ChatWindow';
@@ -11,6 +11,7 @@ export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isPulsing, setIsPulsing] = useState(false);
   const { currentRoom, currentParticipant, isLoading, joinOrCreateRoom, leaveChat, unreadCount, resetUnread, notificationSound } = useChat();
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -27,25 +28,42 @@ export const ChatWidget = () => {
     await joinOrCreateRoom(displayName, 'client');
   };
 
+  // Trigger pulse animation when unreadCount increases
+  const prevUnread = useRef(unreadCount);
+  useEffect(() => {
+    if (unreadCount > prevUnread.current) {
+      setIsPulsing(true);
+      const timer = setTimeout(() => setIsPulsing(false), 1500);
+      return () => clearTimeout(timer);
+    }
+    prevUnread.current = unreadCount;
+  }, [unreadCount]);
+
   const handleOpen = () => {
     setIsOpen(true);
+    setIsPulsing(false);
     resetUnread();
   };
 
   const handleToggleMinimize = () => {
     const next = !isMinimized;
     setIsMinimized(next);
-    if (!next) resetUnread();
+    if (!next) {
+      setIsPulsing(false);
+      resetUnread();
+    }
   };
 
   if (!isOpen) {
     return (
       <Button
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+        className={`fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+          isPulsing ? 'animate-chat-pulse' : ''
+        }`}
         size="icon"
       >
-        <MessageCircle className="h-6 w-6" />
+        <MessageCircle className={`h-6 w-6 ${isPulsing ? 'animate-chat-shake' : ''}`} />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-bold animate-bounce">
             {unreadCount > 99 ? '99+' : unreadCount}
