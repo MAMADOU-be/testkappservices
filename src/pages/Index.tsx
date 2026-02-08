@@ -9,6 +9,7 @@ import { Recruitment } from "@/components/Recruitment";
 import { FAQ } from "@/components/FAQ";
 import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
+import { IroningRegistrationForm } from "@/components/IroningRegistrationForm";
 
 const Index = () => {
   return (
@@ -21,6 +22,7 @@ const Index = () => {
         <HowItWorks />
         <Agencies />
         <RequestForm />
+        <IroningRegistrationForm />
         <FAQ />
         <Recruitment />
         <Contact />
