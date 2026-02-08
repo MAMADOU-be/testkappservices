@@ -10,6 +10,9 @@ interface ChatMessage {
   content: string;
   created_at: string;
   is_read: boolean;
+  file_url?: string | null;
+  file_name?: string | null;
+  file_type?: string | null;
   participant?: {
     display_name: string;
     role: string;
@@ -51,7 +54,7 @@ interface ChatContextType {
   resetUnread: () => void;
   joinOrCreateRoom: (displayName: string, role?: 'client' | 'employee') => Promise<{ room: ChatRoom; participant: ChatParticipant } | null>;
   joinExistingRoom: (roomId: string, displayName: string) => Promise<{ room: ChatRoom; participant: ChatParticipant } | null>;
-  sendMessage: (content: string) => Promise<boolean>;
+  sendMessage: (content: string, file?: File) => Promise<boolean>;
   leaveChat: () => Promise<void>;
   loadMessages: (roomId: string) => Promise<void>;
   loadParticipants: (roomId: string) => Promise<void>;
@@ -228,28 +231,58 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   }, [loadMessages, loadParticipants]);
 
   const MAX_MESSAGE_LENGTH = 5000;
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-  const sendMessage = useCallback(async (content: string) => {
-    if (!currentRoom || !currentParticipant || !content.trim()) {
-      return false;
-    }
+  const sendMessage = useCallback(async (content: string, file?: File) => {
+    if (!currentRoom || !currentParticipant) return false;
+    if (!content.trim() && !file) return false;
 
     const trimmedContent = content.trim();
-    
-    // Client-side validation for message length
+
     if (trimmedContent.length > MAX_MESSAGE_LENGTH) {
       setError(`Message trop long (maximum ${MAX_MESSAGE_LENGTH} caractères)`);
       return false;
     }
 
+    if (file && file.size > MAX_FILE_SIZE) {
+      setError('Fichier trop volumineux (maximum 10 Mo)');
+      return false;
+    }
+
     try {
+      let fileUrl: string | null = null;
+      let fileName: string | null = null;
+      let fileType: string | null = null;
+
+      if (file) {
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData?.user?.id;
+        const ext = file.name.split('.').pop();
+        const path = `${userId}/${currentRoom.id}/${Date.now()}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('chat-files')
+          .upload(path, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('chat-files')
+          .getPublicUrl(path);
+
+        fileUrl = urlData.publicUrl;
+        fileName = file.name;
+        fileType = file.type;
+      }
+
       const { error: sendError } = await supabase
         .from('chat_messages')
         .insert({
           room_id: currentRoom.id,
           participant_id: currentParticipant.id,
-          content: trimmedContent
-        });
+          content: trimmedContent || (fileName ? `📎 ${fileName}` : ''),
+          ...(fileUrl && { file_url: fileUrl, file_name: fileName, file_type: fileType }),
+        } as any);
 
       if (sendError) throw sendError;
       return true;
