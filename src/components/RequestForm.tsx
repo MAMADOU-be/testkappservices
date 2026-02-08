@@ -102,9 +102,8 @@ export function RequestForm() {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase
-        .from('service_requests')
-        .insert({
+      const { data: result, error } = await supabase.functions.invoke('submit-service-request', {
+        body: {
           first_name: data.prenom,
           last_name: data.nom,
           email: data.email,
@@ -116,10 +115,12 @@ export function RequestForm() {
           frequency: `${data.heuresParSemaine}h/semaine`,
           preferred_day: data.joursPreference.join(', '),
           comments: data.message || null,
-          status: 'pending',
-        });
+          website: honeypot, // honeypot field for server-side check
+        },
+      });
 
       if (error) throw error;
+      if (result?.error) throw new Error(result.error);
 
       setIsSubmitted(true);
       toast({
@@ -127,11 +128,13 @@ export function RequestForm() {
         description: "Nous vous contacterons dans les 24 heures ouvrables.",
       });
     } catch (error) {
-      console.error('Error submitting form:', error);
+      const message = error instanceof Error && error.message.includes('Trop de demandes')
+        ? error.message
+        : "Une erreur est survenue. Veuillez réessayer.";
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        description: message,
       });
     } finally {
       setIsSubmitting(false);
