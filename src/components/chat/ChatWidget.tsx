@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const { currentRoom, currentParticipant, isLoading, joinOrCreateRoom, leaveChat } = useChat();
+  const { currentRoom, currentParticipant, isLoading, joinOrCreateRoom, leaveChat, unreadCount, resetUnread } = useChat();
   const { user } = useAuth();
   const { profile } = useProfile();
 
@@ -26,14 +26,30 @@ export const ChatWidget = () => {
     await joinOrCreateRoom(displayName, 'client');
   };
 
+  const handleOpen = () => {
+    setIsOpen(true);
+    resetUnread();
+  };
+
+  const handleToggleMinimize = () => {
+    const next = !isMinimized;
+    setIsMinimized(next);
+    if (!next) resetUnread();
+  };
+
   if (!isOpen) {
     return (
       <Button
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110 hover:shadow-xl"
         size="icon"
       >
         <MessageCircle className="h-6 w-6" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-bold animate-bounce">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
         <span className="sr-only">Ouvrir le chat</span>
       </Button>
     );
@@ -56,7 +72,7 @@ export const ChatWidget = () => {
             variant="ghost"
             size="icon"
             className="h-7 w-7 hover:bg-primary-foreground/20 text-primary-foreground"
-            onClick={() => setIsMinimized(!isMinimized)}
+            onClick={handleToggleMinimize}
           >
             {isMinimized ? (
               <Maximize2 className="h-4 w-4" />
