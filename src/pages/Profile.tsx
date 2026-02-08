@@ -10,17 +10,12 @@ import { useToast } from '@/hooks/use-toast';
 import ReferralSection from '@/components/profile/ReferralSection';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { ServiceRequestsTable } from '@/components/admin/ServiceRequestsTable';
-import { AdminChatView } from '@/components/admin/AdminChatView';
 import { UserManagement } from '@/components/admin/UserManagement';
 import {
   Loader2,
   ArrowLeft,
-  User,
-  Mail,
-  Shield,
   LogOut,
   FileText,
-  MessageCircle,
   Gift,
   Settings,
   Users,
@@ -80,7 +75,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Header */}
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -119,18 +113,12 @@ const Profile = () => {
 
       <div className="container mx-auto px-4 py-4">
         <Tabs defaultValue={isStaff ? 'requests' : 'profile'} className="space-y-4">
-          <TabsList className={`grid w-full max-w-xl ${isAdmin ? 'grid-cols-5' : isStaff ? 'grid-cols-4' : 'grid-cols-2'}`}>
+          <TabsList className={`grid w-full max-w-xl ${isAdmin ? 'grid-cols-4' : isStaff ? 'grid-cols-3' : 'grid-cols-2'}`}>
             {isStaff && (
-              <>
-                <TabsTrigger value="requests" className="flex items-center gap-1.5 text-xs">
-                  <FileText className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Demandes</span>
-                </TabsTrigger>
-                <TabsTrigger value="chat" className="flex items-center gap-1.5 text-xs">
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Chat</span>
-                </TabsTrigger>
-              </>
+              <TabsTrigger value="requests" className="flex items-center gap-1.5 text-xs">
+                <FileText className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Demandes</span>
+              </TabsTrigger>
             )}
             {isAdmin && (
               <TabsTrigger value="users" className="flex items-center gap-1.5 text-xs">
@@ -149,14 +137,9 @@ const Profile = () => {
           </TabsList>
 
           {isStaff && (
-            <>
-              <TabsContent value="requests">
-                <ServiceRequestsTable />
-              </TabsContent>
-              <TabsContent value="chat" className="h-[calc(100vh-10rem)]">
-                <AdminChatView />
-              </TabsContent>
-            </>
+            <TabsContent value="requests">
+              <ServiceRequestsTable />
+            </TabsContent>
           )}
 
           {isAdmin && (
