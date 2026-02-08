@@ -77,25 +77,31 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "chat-pulse": {
+          "0%, 100%": { boxShadow: "0 0 0 0 hsl(var(--primary) / 0.7)" },
+          "50%": { boxShadow: "0 0 0 12px hsl(var(--primary) / 0)" },
+        },
+        "chat-shake": {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "15%": { transform: "rotate(-12deg)" },
+          "30%": { transform: "rotate(10deg)" },
+          "45%": { transform: "rotate(-8deg)" },
+          "60%": { transform: "rotate(6deg)" },
+          "75%": { transform: "rotate(-3deg)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "chat-pulse": "chat-pulse 0.75s ease-in-out 2",
+        "chat-shake": "chat-shake 0.6s ease-in-out 2",
       },
     },
   },
