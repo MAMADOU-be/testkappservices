@@ -93,6 +93,12 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const notificationSound = useNotificationSound();
   const browserNotification = useBrowserNotification();
+  
+  // Refs to avoid stale closures in realtime subscription
+  const playSoundRef = useRef(notificationSound.playSound);
+  const sendNotificationRef = useRef(browserNotification.sendNotification);
+  playSoundRef.current = notificationSound.playSound;
+  sendNotificationRef.current = browserNotification.sendNotification;
 
   const resetUnread = useCallback(() => {
     setUnreadCount(0);
@@ -397,8 +403,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           // Play sound & push notification for messages from others
           if (payload.new.participant_id !== currentParticipant?.id) {
             setUnreadCount(prev => prev + 1);
-            notificationSound.playSound();
-            browserNotification.sendNotification('Nouveau message', {
+            playSoundRef.current();
+            sendNotificationRef.current('Nouveau message', {
               body: `${participantData?.display_name}: ${(payload.new as any).content?.substring(0, 100)}`,
               tag: 'chat-message',
             });
