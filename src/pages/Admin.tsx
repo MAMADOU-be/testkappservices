@@ -53,6 +53,9 @@ interface ChatMessage {
   content: string;
   created_at: string;
   is_read: boolean | null;
+  file_url?: string | null;
+  file_name?: string | null;
+  file_type?: string | null;
   participant?: {
     display_name: string;
     role: string;
@@ -512,9 +515,32 @@ const Admin = () => {
                                   {isEmployee ? 'Employé' : 'Client'}
                                 </Badge>
                               </div>
-                              <p className="whitespace-pre-wrap break-words">
-                                {message.content}
-                              </p>
+                              {message.file_url ? (
+                                <>
+                                  {message.content && !message.content.startsWith('📎') && (
+                                    <p className="whitespace-pre-wrap break-words mb-1">{message.content}</p>
+                                  )}
+                                  {message.file_type?.startsWith('image/') ? (
+                                    <a href={message.file_url} target="_blank" rel="noopener noreferrer" className="block mt-1">
+                                      <img src={message.file_url} alt={message.file_name || 'Image'} className="max-w-full max-h-48 rounded-md object-contain" />
+                                    </a>
+                                  ) : (
+                                    <a
+                                      href={message.file_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 mt-1 text-xs underline opacity-80 hover:opacity-100"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      {message.file_name || 'Fichier'}
+                                    </a>
+                                  )}
+                                </>
+                              ) : (
+                                <p className="whitespace-pre-wrap break-words">
+                                  {message.content}
+                                </p>
+                              )}
                               <p className={`text-xs mt-1 ${
                                 isEmployee ? 'text-primary-foreground/70' : 'text-muted-foreground'
                               }`}>
