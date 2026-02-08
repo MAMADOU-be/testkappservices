@@ -37,6 +37,8 @@ interface ChatContextType {
   currentParticipant: ChatParticipant | null;
   isLoading: boolean;
   error: string | null;
+  unreadCount: number;
+  resetUnread: () => void;
   joinOrCreateRoom: (displayName: string, role?: 'client' | 'employee') => Promise<{ room: ChatRoom; participant: ChatParticipant } | null>;
   joinExistingRoom: (roomId: string, displayName: string) => Promise<{ room: ChatRoom; participant: ChatParticipant } | null>;
   sendMessage: (content: string) => Promise<boolean>;
@@ -66,6 +68,30 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [currentParticipant, setCurrentParticipant] = useState<ChatParticipant | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isChatVisible, setIsChatVisible] = useState(false);
+
+  const resetUnread = useCallback(() => {
+    setUnreadCount(0);
+    setIsChatVisible(true);
+  }, []);
+
+  const playNotificationSound = useCallback(() => {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.value = 0.15;
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.stop(ctx.currentTime + 0.3);
+    } catch {
+      // Audio not available
+    }
+  }, []);
 
   // No more anonymous sessions - all users must be authenticated
 
@@ -232,6 +258,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     setCurrentParticipant(null);
     setMessages([]);
     setParticipants([]);
+    setUnreadCount(0);
+    setIsChatVisible(false);
   }, [currentParticipant]);
 
   useEffect(() => {
@@ -260,6 +288,12 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           } as ChatMessage;
 
           setMessages(prev => [...prev, newMessage]);
+
+          // Increment unread & play sound if message is from employee and chat is not visible
+          if (participantData?.role === 'employee') {
+            setUnreadCount(prev => prev + 1);
+            playNotificationSound();
+          }
         }
       )
       .subscribe();
@@ -293,6 +327,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     currentParticipant,
     isLoading,
     error,
+    unreadCount,
+    resetUnread,
     joinOrCreateRoom,
     joinExistingRoom,
     sendMessage,
