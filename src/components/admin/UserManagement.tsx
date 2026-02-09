@@ -49,7 +49,15 @@ import {
   User,
   Crown,
   Briefcase,
+  Filter,
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface UserInfo {
   id: string;
@@ -71,6 +79,7 @@ export function UserManagement() {
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [updatingRole, setUpdatingRole] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -132,11 +141,14 @@ export function UserManagement() {
 
   const filteredUsers = users.filter((u) => {
     const q = searchQuery.toLowerCase();
-    return (
+    const matchesSearch =
       u.email?.toLowerCase().includes(q) ||
       u.display_name?.toLowerCase().includes(q) ||
-      u.roles.some((r) => roleConfig[r]?.label.toLowerCase().includes(q))
-    );
+      u.roles.some((r) => roleConfig[r]?.label.toLowerCase().includes(q));
+    const matchesRole =
+      roleFilter === 'all' ||
+      (roleFilter === 'none' ? u.roles.length === 0 : u.roles.includes(roleFilter));
+    return matchesSearch && matchesRole;
   });
 
   const adminCount = users.filter((u) => u.roles.includes('admin')).length;
@@ -204,16 +216,29 @@ export function UserManagement() {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
-            <div className="relative">
+          <div className="mb-4 flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher par nom, email ou rôle..."
+                placeholder="Rechercher par nom, email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filtrer par rôle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les rôles</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="employee">Employé</SelectItem>
+                <SelectItem value="user">Utilisateur</SelectItem>
+                <SelectItem value="none">Aucun rôle</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {filteredUsers.length === 0 ? (
