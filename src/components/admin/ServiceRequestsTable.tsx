@@ -43,7 +43,8 @@ import {
   MapPin,
   Phone,
   Mail,
-  Calendar
+  Calendar,
+  Download
 } from 'lucide-react';
 
 interface ServiceRequest {
@@ -182,6 +183,24 @@ export function ServiceRequestsTable() {
     );
   };
 
+  const exportCSV = () => {
+    const headers = ['Date', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Rue', 'Code Postal', 'Ville', 'Service', 'Fréquence', 'Jour préféré', 'Heure préférée', 'Commentaires', 'Statut', 'Notes'];
+    const rows = filteredRequests.map(r => [
+      format(new Date(r.created_at), 'dd/MM/yyyy', { locale: fr }),
+      r.first_name, r.last_name, r.email, r.phone, r.street, r.postal_code, r.city,
+      r.service_type, r.frequency, r.preferred_day || '', r.preferred_time || '',
+      r.comments || '', statusConfig[r.status]?.label || r.status, r.notes || '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `demandes-service-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const pendingCount = requests.filter(r => r.status === 'pending').length;
   const contactedCount = requests.filter(r => r.status === 'contacted').length;
   const confirmedCount = requests.filter(r => r.status === 'confirmed').length;
@@ -274,6 +293,10 @@ export function ServiceRequestsTable() {
                 ))}
               </SelectContent>
             </Select>
+            <Button variant="outline" size="sm" onClick={exportCSV} disabled={filteredRequests.length === 0}>
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
             <Button variant="outline" size="sm" onClick={loadRequests}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualiser
