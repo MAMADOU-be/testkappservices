@@ -80,6 +80,7 @@ export function ServiceRequestsTable() {
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
   const [notes, setNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const { toast } = useToast();
 
   const loadRequests = async () => {
@@ -185,6 +186,10 @@ export function ServiceRequestsTable() {
   const contactedCount = requests.filter(r => r.status === 'contacted').length;
   const confirmedCount = requests.filter(r => r.status === 'confirmed').length;
 
+  const filteredRequests = statusFilter === 'all'
+    ? requests
+    : requests.filter(r => r.status === statusFilter);
+
   if (isLoading) {
     return (
       <Card>
@@ -247,21 +252,39 @@ export function ServiceRequestsTable() {
 
       {/* Table */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-4">
+        <CardHeader className="flex flex-row items-center justify-between pb-4 flex-wrap gap-4">
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Demandes de service
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={loadRequests}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[160px] h-8 bg-background">
+                <SelectValue placeholder="Filtrer par statut" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                {Object.entries(statusConfig).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>
+                    <div className="flex items-center gap-2">
+                      <config.icon className="h-3 w-3" />
+                      {config.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={loadRequests}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualiser
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
-          {requests.length === 0 ? (
+          {filteredRequests.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>Aucune demande de service</p>
+              <p>{statusFilter === 'all' ? 'Aucune demande de service' : `Aucune demande avec le statut "${statusConfig[statusFilter]?.label}"`}</p>
             </div>
           ) : (
             <ScrollArea className="max-h-[500px]">
@@ -278,7 +301,7 @@ export function ServiceRequestsTable() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {requests.map((request) => (
+                  {filteredRequests.map((request) => (
                     <TableRow key={request.id}>
                       <TableCell className="whitespace-nowrap">
                         {format(new Date(request.created_at), 'dd/MM/yyyy', { locale: fr })}
