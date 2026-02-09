@@ -50,6 +50,7 @@ import {
   Crown,
   Briefcase,
   Filter,
+  Download,
 } from 'lucide-react';
 import {
   Select,
@@ -154,6 +155,26 @@ export function UserManagement() {
   const adminCount = users.filter((u) => u.roles.includes('admin')).length;
   const employeeCount = users.filter((u) => u.roles.includes('employee')).length;
 
+  const exportCSV = () => {
+    const headers = ['Nom', 'Email', 'Téléphone', 'Rôles', 'Inscription', 'Dernière connexion'];
+    const rows = filteredUsers.map(u => [
+      u.display_name || u.email?.split('@')[0] || '',
+      u.email,
+      u.phone || '',
+      u.roles.map(r => roleConfig[r]?.label || r).join(', ') || 'Aucun',
+      format(new Date(u.created_at), 'dd/MM/yyyy', { locale: fr }),
+      u.last_sign_in_at ? format(new Date(u.last_sign_in_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : 'Jamais',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `utilisateurs-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -210,10 +231,16 @@ export function UserManagement() {
             <ShieldCheck className="h-5 w-5" />
             Gestion des utilisateurs
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={loadUsers}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={exportCSV} disabled={filteredUsers.length === 0}>
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={loadUsers}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualiser
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex flex-col sm:flex-row gap-3">
