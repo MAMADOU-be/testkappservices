@@ -15,6 +15,7 @@ import { ServiceRequestsTable } from '@/components/admin/ServiceRequestsTable';
 import { JobApplicationsTable } from '@/components/admin/JobApplicationsTable';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { ClientRequestsView } from '@/components/profile/ClientRequestsView';
+import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import {
   Loader2,
   ArrowLeft,
@@ -24,14 +25,13 @@ import {
   Settings,
   Users,
   Briefcase,
-  Bell,
   Send,
 } from 'lucide-react';
 
 const Profile = () => {
   const { user, isLoading: authLoading, signOut } = useAuth();
   const { profile, roles, isLoading: profileLoading, hasAnyRole } = useProfile();
-  const { unreadCount, markAllAsRead } = useAdminNotifications();
+  const { unreadCount, markAllAsRead, loadUnreadCount } = useAdminNotifications();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -124,13 +124,12 @@ const Profile = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {isStaff && unreadCount > 0 && (
-              <Button variant="ghost" size="sm" className="relative" onClick={markAllAsRead}>
-                <Bell className="h-4 w-4" />
-                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              </Button>
+            {isStaff && (
+              <NotificationPanel
+                unreadCount={unreadCount}
+                markAllAsRead={markAllAsRead}
+                loadUnreadCount={loadUnreadCount}
+              />
             )}
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="h-3.5 w-3.5 mr-1.5" />
