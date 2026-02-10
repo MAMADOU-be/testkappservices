@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Send, Phone, Mail, MapPin, CheckCircle } from "lucide-react";
+import { Send, Phone, Mail, MapPin, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,13 +42,37 @@ export function Contact() {
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Contact form submitted:", data);
-    setIsSubmitted(true);
-    toast({
-      title: "Message envoyé !",
-      description: "Nous vous répondrons dans les plus brefs délais.",
-    });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact-message`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify(data),
+        }
+      );
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Erreur lors de l'envoi");
+      }
+      setIsSubmitted(true);
+      toast({
+        title: "Message envoyé !",
+        description: "Nous vous répondrons dans les plus brefs délais.",
+      });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: err.message || "Une erreur est survenue.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -243,9 +267,13 @@ export function Contact() {
                       )}
                     />
 
-                    <Button type="submit" size="lg" className="btn-accent border-0 w-full">
-                      <Send className="w-5 h-5 mr-2" />
-                      Envoyer
+                    <Button type="submit" size="lg" className="btn-accent border-0 w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      ) : (
+                        <Send className="w-5 h-5 mr-2" />
+                      )}
+                      {isSubmitting ? 'Envoi en cours...' : 'Envoyer'}
                     </Button>
                   </form>
                 </Form>

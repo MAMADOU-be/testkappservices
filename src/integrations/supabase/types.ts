@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          is_read: boolean
+          last_name: string
+          message: string
+          notes: string | null
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          is_read?: boolean
+          last_name: string
+          message: string
+          notes?: string | null
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          is_read?: boolean
+          last_name?: string
+          message?: string
+          notes?: string | null
+          phone?: string
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           city: string

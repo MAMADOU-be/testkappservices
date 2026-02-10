@@ -103,6 +103,19 @@ export function useAdminNotifications() {
           loadUnreadCount();
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'contact_messages' },
+        (payload) => {
+          const msg = payload.new as { first_name: string; last_name: string };
+          playNotificationSound();
+          toast({
+            title: '✉️ Nouveau message de contact',
+            description: `${msg.first_name} ${msg.last_name} a envoyé un message`,
+          });
+          loadUnreadCount();
+        }
+      )
       .subscribe();
 
     return () => {

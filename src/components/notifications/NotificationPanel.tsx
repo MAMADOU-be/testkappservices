@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Bell, Check, CheckCheck, FileText, Briefcase, ExternalLink } from 'lucide-react';
+import { Bell, Check, CheckCheck, FileText, Briefcase, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -81,6 +81,7 @@ export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount,
     switch (type) {
       case 'service_request': return <FileText className="h-4 w-4 text-primary" />;
       case 'job_application': return <Briefcase className="h-4 w-4 text-amber-500" />;
+      case 'contact_message': return <MessageSquare className="h-4 w-4 text-emerald-500" />;
       default: return <Bell className="h-4 w-4 text-muted-foreground" />;
     }
   };
@@ -89,6 +90,7 @@ export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount,
     switch (type) {
       case 'service_request': return 'requests';
       case 'job_application': return 'jobs';
+      case 'contact_message': return 'messages';
       default: return null;
     }
   };

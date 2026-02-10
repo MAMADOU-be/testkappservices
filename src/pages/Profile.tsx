@@ -16,6 +16,7 @@ import { JobApplicationsTable } from '@/components/admin/JobApplicationsTable';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { ClientRequestsView } from '@/components/profile/ClientRequestsView';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
+import { ContactMessagesTable } from '@/components/admin/ContactMessagesTable';
 import {
   Loader2,
   ArrowLeft,
@@ -26,6 +27,7 @@ import {
   Users,
   Briefcase,
   Send,
+  MessageSquare,
 } from 'lucide-react';
 
 const Profile = () => {
@@ -86,8 +88,7 @@ const Profile = () => {
   };
 
   // Determine number of tabs
-  const tabCount = (isStaff ? 1 : 1) + (isAdmin ? 2 : 0) + 2 + (isStaff ? 0 : 0); // requests, jobs(admin), users(admin), profile, referral
-  const gridCols = isAdmin ? 'grid-cols-5' : isStaff ? 'grid-cols-4' : 'grid-cols-3';
+  const gridCols = isAdmin ? 'grid-cols-6' : isStaff ? 'grid-cols-5' : 'grid-cols-3';
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -156,6 +157,12 @@ const Profile = () => {
                 <span className="hidden sm:inline">Candidatures</span>
               </TabsTrigger>
             )}
+            {isStaff && (
+              <TabsTrigger value="messages" className="flex items-center gap-1.5 text-xs">
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Messages</span>
+              </TabsTrigger>
+            )}
             {isAdmin && (
               <TabsTrigger value="users" className="flex items-center gap-1.5 text-xs">
                 <Users className="h-3.5 w-3.5" />
@@ -193,6 +200,12 @@ const Profile = () => {
           {isAdmin && (
             <TabsContent value="users">
               <UserManagement />
+            </TabsContent>
+          )}
+
+          {isStaff && (
+            <TabsContent value="messages">
+              <ContactMessagesTable />
             </TabsContent>
           )}
 
