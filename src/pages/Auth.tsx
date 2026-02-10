@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -9,19 +9,46 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, ArrowLeft, User, Gift } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowLeft, User, Gift, Eye, EyeOff, Check, X } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Email invalide');
 const passwordSchema = z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères');
 const displayNameSchema = z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(50, 'Le nom ne peut pas dépasser 50 caractères');
 
+function getPasswordStrength(password: string) {
+  let score = 0;
+  const checks = {
+    minLength: password.length >= 6,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /\d/.test(password),
+    hasSpecial: /[^A-Za-z0-9]/.test(password),
+    isLong: password.length >= 10,
+  };
+  if (checks.minLength) score++;
+  if (checks.hasUppercase) score++;
+  if (checks.hasLowercase) score++;
+  if (checks.hasNumber) score++;
+  if (checks.hasSpecial) score++;
+  if (checks.isLong) score++;
+  return { score, checks };
+}
+
+function getStrengthLabel(score: number) {
+  if (score <= 2) return { label: 'Faible', color: 'bg-destructive' };
+  if (score <= 4) return { label: 'Moyen', color: 'bg-yellow-500' };
+  return { label: 'Fort', color: 'bg-green-500' };
+}
+
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; displayName?: string }>({});
   
   const { user, isLoading: authLoading, signIn, signUp } = useAuth();
@@ -33,9 +60,11 @@ const Auth = () => {
   const redirectTo = searchParams.get('redirect') || '/';
   const referralCode = searchParams.get('ref');
 
+  const strength = useMemo(() => getPasswordStrength(password), [password]);
+  const strengthInfo = useMemo(() => getStrengthLabel(strength.score), [strength.score]);
+
   useEffect(() => {
     if (!authLoading && !profileLoading && user) {
-      // Redirect employees/admins to admin dashboard
       if (hasAnyRole(['admin', 'employee'])) {
         navigate('/admin');
       } else {
@@ -47,29 +76,15 @@ const Auth = () => {
   const validateForm = (isSignUp = false) => {
     const newErrors: { email?: string; password?: string; displayName?: string } = {};
     
-    try {
-      emailSchema.parse(email);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        newErrors.email = e.errors[0].message;
-      }
+    try { emailSchema.parse(email); } catch (e) {
+      if (e instanceof z.ZodError) newErrors.email = e.errors[0].message;
     }
-    
-    try {
-      passwordSchema.parse(password);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        newErrors.password = e.errors[0].message;
-      }
+    try { passwordSchema.parse(password); } catch (e) {
+      if (e instanceof z.ZodError) newErrors.password = e.errors[0].message;
     }
-    
     if (isSignUp) {
-      try {
-        displayNameSchema.parse(displayName);
-      } catch (e) {
-        if (e instanceof z.ZodError) {
-          newErrors.displayName = e.errors[0].message;
-        }
+      try { displayNameSchema.parse(displayName); } catch (e) {
+        if (e instanceof z.ZodError) newErrors.displayName = e.errors[0].message;
       }
     }
     
@@ -94,10 +109,7 @@ const Auth = () => {
           : error.message,
       });
     } else {
-      toast({
-        title: 'Connexion réussie',
-        description: 'Bienvenue !',
-      });
+      toast({ title: 'Connexion réussie', description: 'Bienvenue !' });
     }
   };
 
@@ -114,13 +126,8 @@ const Auth = () => {
       if (error.message.includes('already registered')) {
         message = 'Un compte existe déjà avec cet email';
       }
-      toast({
-        variant: 'destructive',
-        title: 'Erreur d\'inscription',
-        description: message,
-      });
+      toast({ variant: 'destructive', title: 'Erreur d\'inscription', description: message });
     } else {
-      // Process referral if code was provided
       if (referralCode && data?.user) {
         try {
           await supabase.rpc('process_referral', {
@@ -149,14 +156,59 @@ const Auth = () => {
     );
   }
 
+  const PasswordInput = ({ id, label }: { id: string; label: string }) => (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          id={id}
+          type={showPassword ? 'text' : 'password'}
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="pl-10 pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+          tabIndex={-1}
+        >
+          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+      {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+    </div>
+  );
+
+  const PasswordStrengthIndicator = () => {
+    if (!password) return null;
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Force du mot de passe</span>
+          <span className={`text-xs font-medium ${strength.score <= 2 ? 'text-destructive' : strength.score <= 4 ? 'text-yellow-600' : 'text-green-600'}`}>
+            {strengthInfo.label}
+          </span>
+        </div>
+        <Progress value={(strength.score / 6) * 100} className="h-1.5" />
+        <div className="grid grid-cols-2 gap-1 text-xs">
+          <PasswordCheck ok={strength.checks.minLength} label="6 caractères min." />
+          <PasswordCheck ok={strength.checks.hasUppercase} label="Majuscule" />
+          <PasswordCheck ok={strength.checks.hasLowercase} label="Minuscule" />
+          <PasswordCheck ok={strength.checks.hasNumber} label="Chiffre" />
+          <PasswordCheck ok={strength.checks.hasSpecial} label="Caractère spécial" />
+          <PasswordCheck ok={strength.checks.isLong} label="10+ caractères" />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-muted/30 p-4">
       <div className="w-full max-w-md">
-        <Button 
-          variant="ghost" 
-          className="mb-4"
-          onClick={() => navigate('/')}
-        >
+        <Button variant="ghost" className="mb-4" onClick={() => navigate('/')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Retour au site
         </Button>
@@ -167,9 +219,7 @@ const Auth = () => {
               <span className="text-primary font-bold text-xl">K</span>
             </div>
             <CardTitle className="text-2xl">Connexion</CardTitle>
-            <CardDescription>
-              Connectez-vous ou créez un compte
-            </CardDescription>
+            <CardDescription>Connectez-vous ou créez un compte</CardDescription>
             {referralCode && (
               <Badge variant="secondary" className="mt-2 gap-1">
                 <Gift className="h-3 w-3" />
@@ -190,47 +240,15 @@ const Auth = () => {
                     <Label htmlFor="login-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="votre@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                      />
+                      <Input id="login-email" type="email" placeholder="votre@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" />
                     </div>
-                    {errors.email && (
-                      <p className="text-sm text-destructive">{errors.email}</p>
-                    )}
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Mot de passe</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                    {errors.password && (
-                      <p className="text-sm text-destructive">{errors.password}</p>
-                    )}
-                  </div>
+                  <PasswordInput id="login-password" label="Mot de passe" />
                   
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Connexion...
-                      </>
-                    ) : (
-                      'Se connecter'
-                    )}
+                    {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Connexion...</>) : 'Se connecter'}
                   </Button>
                 </form>
               </TabsContent>
@@ -241,65 +259,25 @@ const Auth = () => {
                     <Label htmlFor="register-name">Nom complet</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="register-name"
-                        type="text"
-                        placeholder="Jean Dupont"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        className="pl-10"
-                      />
+                      <Input id="register-name" type="text" placeholder="Jean Dupont" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="pl-10" />
                     </div>
-                    {errors.displayName && (
-                      <p className="text-sm text-destructive">{errors.displayName}</p>
-                    )}
+                    {errors.displayName && <p className="text-sm text-destructive">{errors.displayName}</p>}
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="register-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="register-email"
-                        type="email"
-                        placeholder="votre@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                      />
+                      <Input id="register-email" type="email" placeholder="votre@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" />
                     </div>
-                    {errors.email && (
-                      <p className="text-sm text-destructive">{errors.email}</p>
-                    )}
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Mot de passe</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="register-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                    {errors.password && (
-                      <p className="text-sm text-destructive">{errors.password}</p>
-                    )}
-                  </div>
+                  <PasswordInput id="register-password" label="Mot de passe" />
+                  <PasswordStrengthIndicator />
                   
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Inscription...
-                      </>
-                    ) : (
-                      'S\'inscrire'
-                    )}
+                    {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Inscription...</>) : 'S\'inscrire'}
                   </Button>
                 </form>
               </TabsContent>
@@ -310,5 +288,14 @@ const Auth = () => {
     </div>
   );
 };
+
+function PasswordCheck({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <div className={`flex items-center gap-1 ${ok ? 'text-green-600' : 'text-muted-foreground'}`}>
+      {ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+      {label}
+    </div>
+  );
+}
 
 export default Auth;

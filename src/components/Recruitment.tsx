@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Briefcase, Heart, Users, Send, CheckCircle, Car, Bike } from "lucide-react";
+import { Briefcase, Heart, Users, Send, CheckCircle, Car, Bike, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { ScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -85,6 +87,7 @@ const planImpulsionOptions = [
 export function Recruitment() {
   const [showForm, setShowForm] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
@@ -106,13 +109,39 @@ export function Recruitment() {
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Job application submitted:", data);
-    setIsSubmitted(true);
-    toast({
-      title: "Candidature envoyée !",
-      description: "Nous vous contacterons dans les plus brefs délais.",
-    });
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('job_applications').insert({
+        first_name: data.prenom,
+        last_name: data.nom,
+        street: data.rue,
+        house_number: data.numero,
+        postal_code: data.codePostal,
+        city: data.localite,
+        phone: data.telephone,
+        email: data.email,
+        employment_type: data.emploi,
+        has_clientele: data.clientele,
+        transport: data.transport,
+        plan_impulsion: data.planImpulsion,
+        message: data.message || null,
+      });
+      if (error) throw error;
+      setIsSubmitted(true);
+      toast({
+        title: "Candidature envoyée !",
+        description: "Nous vous contacterons dans les plus brefs délais.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -149,62 +178,65 @@ export function Recruitment() {
     return (
       <section id="jobs" className="section-padding">
         <div className="container-narrow mx-auto px-4">
-          <div
-            className="relative overflow-hidden rounded-3xl p-8 md:p-12"
-            style={{ background: "var(--gradient-hero)" }}
-          >
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
+          <ScrollAnimation animation="fade-up">
+            <div
+              className="relative overflow-hidden rounded-3xl p-8 md:p-12"
+              style={{ background: "var(--gradient-hero)" }}
+            >
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
 
-            <div className="relative z-10">
-              <div className="grid lg:grid-cols-2 gap-8 items-center">
-                {/* Content */}
-                <div className="text-primary-foreground">
-                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-sm font-medium mb-6">
-                    <Briefcase className="w-4 h-4" />
-                    Nous recrutons
-                  </span>
+              <div className="relative z-10">
+                <div className="grid lg:grid-cols-2 gap-8 items-center">
+                  {/* Content */}
+                  <ScrollAnimation animation="fade-right" delay={200}>
+                    <div className="text-primary-foreground">
+                      <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-sm font-medium mb-6">
+                        <Briefcase className="w-4 h-4" />
+                        Nous recrutons
+                      </span>
 
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                    Rejoignez notre équipe !
-                  </h2>
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                        Rejoignez notre équipe !
+                      </h2>
 
-                  <p className="text-primary-foreground/80 mb-8 max-w-lg">
-                    Nous recherchons des aides-ménagères motivées pour rejoindre notre équipe
-                    dynamique. Bénéficiez d'un encadrement professionnel et d'une ambiance de
-                    travail conviviale.
-                  </p>
+                      <p className="text-primary-foreground/80 mb-8 max-w-lg">
+                        Nous recherchons des aides-ménagères motivées pour rejoindre notre équipe
+                        dynamique. Bénéficiez d'un encadrement professionnel et d'une ambiance de
+                        travail conviviale.
+                      </p>
 
-                  <Button
-                    onClick={() => setShowForm(true)}
-                    className="bg-white text-primary hover:bg-white/90 rounded-full px-8 py-6 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                  >
-                    Postuler maintenant
-                    <Send className="ml-2 w-5 h-5" />
-                  </Button>
-                </div>
-
-                {/* Benefits */}
-                <div className="grid sm:grid-cols-3 lg:grid-cols-1 gap-4">
-                  {benefits.map((benefit) => (
-                    <div
-                      key={benefit.title}
-                      className="flex items-center gap-4 p-4 rounded-xl bg-white/10 backdrop-blur-sm"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                        <benefit.icon className="w-6 h-6 text-primary-foreground" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-primary-foreground">{benefit.title}</h4>
-                        <p className="text-sm text-primary-foreground/70">{benefit.description}</p>
-                      </div>
+                      <Button
+                        onClick={() => setShowForm(true)}
+                        className="bg-white text-primary hover:bg-white/90 rounded-full px-8 py-6 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      >
+                        Postuler maintenant
+                        <Send className="ml-2 w-5 h-5" />
+                      </Button>
                     </div>
-                  ))}
+                  </ScrollAnimation>
+
+                  {/* Benefits */}
+                  <div className="grid sm:grid-cols-3 lg:grid-cols-1 gap-4">
+                    {benefits.map((benefit, index) => (
+                      <ScrollAnimation key={benefit.title} animation="fade-left" delay={300 + index * 100}>
+                        <div className="flex items-center gap-4 p-4 rounded-xl bg-white/10 backdrop-blur-sm">
+                          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                            <benefit.icon className="w-6 h-6 text-primary-foreground" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-primary-foreground">{benefit.title}</h4>
+                            <p className="text-sm text-primary-foreground/70">{benefit.description}</p>
+                          </div>
+                        </div>
+                      </ScrollAnimation>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollAnimation>
         </div>
       </section>
     );
@@ -502,9 +534,12 @@ export function Recruitment() {
                 >
                   Annuler
                 </Button>
-                <Button type="submit" size="lg" className="btn-accent border-0 px-12">
-                  <Send className="w-5 h-5 mr-2" />
-                  Envoyer ma candidature
+                <Button type="submit" size="lg" className="btn-accent border-0 px-12" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Envoi en cours...</>
+                  ) : (
+                    <><Send className="w-5 h-5 mr-2" />Envoyer ma candidature</>
+                  )}
                 </Button>
               </div>
             </form>

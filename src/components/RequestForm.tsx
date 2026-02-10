@@ -123,6 +123,10 @@ export function RequestForm() {
       if (result?.error) throw new Error(result.error);
 
       setIsSubmitted(true);
+      // Scroll to success message
+      setTimeout(() => {
+        document.getElementById('demande')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
       toast({
         title: "Demande envoyée !",
         description: "Nous vous contacterons dans les 24 heures ouvrables.",
@@ -145,19 +149,27 @@ export function RequestForm() {
     return (
       <section id="demande" className="section-padding bg-secondary/30">
         <div className="container-narrow mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center py-16">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-primary" />
+          <div className="max-w-2xl mx-auto text-center py-16 animate-fade-in">
+            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-12 h-12 text-primary" />
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Demande envoyée avec succès !
+              🎉 Demande envoyée avec succès !
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
               Merci pour votre demande. Notre équipe vous contactera dans les 24 heures ouvrables.
             </p>
-            <Button onClick={() => setIsSubmitted(false)} variant="outline">
-              Faire une nouvelle demande
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button onClick={() => { setIsSubmitted(false); form.reset(); }} className="btn-accent border-0">
+                <Send className="w-4 h-4 mr-2" />
+                Faire une nouvelle demande
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="#ironing-registration">
+                  Lire et signer un contrat repassage
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useAdminNotifications } from '@/hooks/useNotifications';
+import { usePresence } from '@/hooks/usePresence';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import ReferralSection from '@/components/profile/ReferralSection';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { ServiceRequestsTable } from '@/components/admin/ServiceRequestsTable';
+import { JobApplicationsTable } from '@/components/admin/JobApplicationsTable';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { ClientRequestsView } from '@/components/profile/ClientRequestsView';
 import {
   Loader2,
   ArrowLeft,
@@ -19,13 +23,20 @@ import {
   Gift,
   Settings,
   Users,
+  Briefcase,
+  Bell,
+  Send,
 } from 'lucide-react';
 
 const Profile = () => {
   const { user, isLoading: authLoading, signOut } = useAuth();
   const { profile, roles, isLoading: profileLoading, hasAnyRole } = useProfile();
+  const { unreadCount, markAllAsRead } = useAdminNotifications();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Activate presence tracking
+  usePresence();
 
   const isStaff = hasAnyRole(['admin', 'employee']);
   const isAdmin = hasAnyRole(['admin']);
@@ -73,6 +84,10 @@ const Profile = () => {
     }
   };
 
+  // Determine number of tabs
+  const tabCount = (isStaff ? 1 : 1) + (isAdmin ? 2 : 0) + 2 + (isStaff ? 0 : 0); // requests, jobs(admin), users(admin), profile, referral
+  const gridCols = isAdmin ? 'grid-cols-5' : isStaff ? 'grid-cols-4' : 'grid-cols-3';
+
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="bg-card border-b sticky top-0 z-10">
@@ -82,12 +97,16 @@ const Profile = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Online indicator */}
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-card rounded-full" />
+              </div>
               <div>
                 <h1 className="font-semibold text-sm">{displayName}</h1>
                 <div className="flex items-center gap-1.5">
@@ -104,16 +123,26 @@ const Profile = () => {
               </div>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="h-3.5 w-3.5 mr-1.5" />
-            Déconnexion
-          </Button>
+          <div className="flex items-center gap-2">
+            {isStaff && unreadCount > 0 && (
+              <Button variant="ghost" size="sm" className="relative" onClick={markAllAsRead}>
+                <Bell className="h-4 w-4" />
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="h-3.5 w-3.5 mr-1.5" />
+              Déconnexion
+            </Button>
+          </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-4">
-        <Tabs defaultValue={isStaff ? 'requests' : 'profile'} className="space-y-4">
-          <TabsList className={`grid w-full max-w-xl ${isAdmin ? 'grid-cols-4' : isStaff ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <Tabs defaultValue={isStaff ? 'requests' : 'my-requests'} className="space-y-4">
+          <TabsList className={`grid w-full max-w-2xl ${gridCols}`}>
             {isStaff && (
               <TabsTrigger value="requests" className="flex items-center gap-1.5 text-xs">
                 <FileText className="h-3.5 w-3.5" />
@@ -121,9 +150,21 @@ const Profile = () => {
               </TabsTrigger>
             )}
             {isAdmin && (
+              <TabsTrigger value="jobs" className="flex items-center gap-1.5 text-xs">
+                <Briefcase className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Candidatures</span>
+              </TabsTrigger>
+            )}
+            {isAdmin && (
               <TabsTrigger value="users" className="flex items-center gap-1.5 text-xs">
                 <Users className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Utilisateurs</span>
+              </TabsTrigger>
+            )}
+            {!isStaff && (
+              <TabsTrigger value="my-requests" className="flex items-center gap-1.5 text-xs">
+                <FileText className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Mes demandes</span>
               </TabsTrigger>
             )}
             <TabsTrigger value="profile" className="flex items-center gap-1.5 text-xs">
@@ -143,8 +184,22 @@ const Profile = () => {
           )}
 
           {isAdmin && (
+            <TabsContent value="jobs">
+              <JobApplicationsTable />
+            </TabsContent>
+          )}
+
+          {isAdmin && (
             <TabsContent value="users">
               <UserManagement />
+            </TabsContent>
+          )}
+
+          {!isStaff && (
+            <TabsContent value="my-requests">
+              <div className="max-w-3xl">
+                <ClientRequestsView />
+              </div>
             </TabsContent>
           )}
 

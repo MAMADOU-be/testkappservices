@@ -186,7 +186,7 @@ export function ServiceRequestsTable() {
   const exportCSV = () => {
     const headers = ['Date', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Rue', 'Code Postal', 'Ville', 'Service', 'Fréquence', 'Jour préféré', 'Heure préférée', 'Commentaires', 'Statut', 'Notes'];
     const rows = filteredRequests.map(r => [
-      format(new Date(r.created_at), 'dd/MM/yyyy', { locale: fr }),
+      format(new Date(r.created_at), 'dd/MM/yyyy HH:mm', { locale: fr }),
       r.first_name, r.last_name, r.email, r.phone, r.street, r.postal_code, r.city,
       r.service_type, r.frequency, r.preferred_day || '', r.preferred_time || '',
       r.comments || '', statusConfig[r.status]?.label || r.status, r.notes || '',
@@ -327,7 +327,7 @@ export function ServiceRequestsTable() {
                   {filteredRequests.map((request) => (
                     <TableRow key={request.id}>
                       <TableCell className="whitespace-nowrap">
-                        {format(new Date(request.created_at), 'dd/MM/yyyy', { locale: fr })}
+                        {format(new Date(request.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
                       </TableCell>
                       <TableCell className="font-medium">
                         {request.first_name} {request.last_name}

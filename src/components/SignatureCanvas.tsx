@@ -13,6 +13,48 @@ export function SignatureCanvas({ onSignatureChange, width = 500, height = 150 }
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
 
+  const initCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0) return;
+    
+    // Save existing content
+    const existingData = hasSignature ? canvas.toDataURL() : null;
+    
+    // Set canvas resolution to match display size
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.scale(dpr, dpr);
+      
+      // Restore existing content if any
+      if (existingData && hasSignature) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, rect.width, rect.height);
+        };
+        img.src = existingData;
+      }
+    }
+  }, [hasSignature]);
+
+  useEffect(() => {
+    // Use ResizeObserver to properly initialize canvas when visible
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const observer = new ResizeObserver(() => {
+      initCanvas();
+    });
+    observer.observe(canvas);
+
+    return () => observer.disconnect();
+  }, [initCanvas]);
+
   const getContext = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
@@ -24,13 +66,6 @@ export function SignatureCanvas({ onSignatureChange, width = 500, height = 150 }
       ctx.lineJoin = "round";
     }
     return ctx;
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
   }, []);
 
   const getPos = (e: React.MouseEvent | React.TouchEvent) => {
@@ -81,7 +116,8 @@ export function SignatureCanvas({ onSignatureChange, width = 500, height = 150 }
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const dpr = window.devicePixelRatio || 1;
+      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     }
     setHasSignature(false);
     onSignatureChange(null);
