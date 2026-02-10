@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
   Loader2, FileText, Clock, CheckCircle, XCircle, Phone as PhoneIcon,
-  MapPin, Calendar, Send
+  MapPin, Calendar, Send, Download, Shirt, Home
 } from 'lucide-react';
 
 interface ServiceRequest {
@@ -95,6 +95,49 @@ export function ClientRequestsView() {
               Demander une aide-ménagère
             </a>
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Contrats */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Download className="h-5 w-5" />
+            Mes contrats
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Téléchargez, lisez et remplissez le contrat correspondant à votre service, puis renvoyez-le signé à votre agence.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <a
+              href="/contrats/convention-titres-services-2025.docx"
+              download
+              className="flex items-center gap-3 border rounded-xl p-4 hover:bg-secondary/50 transition-colors group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Home className="w-5 h-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">Convention Aide-Ménagère</p>
+                <p className="text-xs text-muted-foreground">Titres-Services 2025 • DOCX</p>
+              </div>
+            </a>
+            <a
+              href="/contrats/convention-repassage-2025.docx"
+              download
+              className="flex items-center gap-3 border rounded-xl p-4 hover:bg-secondary/50 transition-colors group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                <Shirt className="w-5 h-5 text-accent" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">Convention Repassage en Atelier</p>
+                <p className="text-xs text-muted-foreground">Prestations 2025 • DOCX</p>
+              </div>
+            </a>
+          </div>
         </CardContent>
       </Card>
 
