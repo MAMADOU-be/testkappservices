@@ -34,6 +34,7 @@ const Profile = () => {
   const { unreadCount, markAllAsRead, loadUnreadCount } = useAdminNotifications();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<string>('');
 
   // Activate presence tracking
   usePresence();
@@ -129,6 +130,7 @@ const Profile = () => {
                 unreadCount={unreadCount}
                 markAllAsRead={markAllAsRead}
                 loadUnreadCount={loadUnreadCount}
+                onNavigateToTab={setActiveTab}
               />
             )}
             <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -140,7 +142,7 @@ const Profile = () => {
       </header>
 
       <div className="container mx-auto px-4 py-4">
-        <Tabs defaultValue={isStaff ? 'requests' : 'my-requests'} className="space-y-4">
+        <Tabs value={activeTab || (isStaff ? 'requests' : 'my-requests')} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className={`grid w-full max-w-2xl ${gridCols}`}>
             {isStaff && (
               <TabsTrigger value="requests" className="flex items-center gap-1.5 text-xs">
