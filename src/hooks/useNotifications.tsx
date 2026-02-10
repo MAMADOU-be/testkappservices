@@ -76,7 +76,7 @@ export function useAdminNotifications() {
           setUnreadCount(prev => prev + 1);
         }
       )
-      // Also listen for new service requests directly
+      // Listen for new service requests
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'service_requests' },
@@ -87,13 +87,7 @@ export function useAdminNotifications() {
             title: '🏠 Nouvelle demande de service',
             description: `${req.first_name} ${req.last_name} a envoyé une demande`,
           });
-          // Create notification record
-          supabase.from('admin_notifications').insert({
-            type: 'service_request',
-            reference_id: (payload.new as { id: string }).id,
-            title: 'Nouvelle demande de service',
-            message: `${req.first_name} ${req.last_name} a envoyé une demande`,
-          });
+          loadUnreadCount();
         }
       )
       .on(
@@ -106,12 +100,7 @@ export function useAdminNotifications() {
             title: '💼 Nouvelle candidature',
             description: `${app.first_name} ${app.last_name} a postulé`,
           });
-          supabase.from('admin_notifications').insert({
-            type: 'job_application',
-            reference_id: (payload.new as { id: string }).id,
-            title: 'Nouvelle candidature',
-            message: `${app.first_name} ${app.last_name} a postulé`,
-          });
+          loadUnreadCount();
         }
       )
       .subscribe();
