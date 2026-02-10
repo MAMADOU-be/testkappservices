@@ -22,9 +22,10 @@ interface NotificationPanelProps {
   unreadCount: number;
   markAllAsRead: () => Promise<void>;
   loadUnreadCount: () => Promise<void>;
+  onNavigateToTab?: (tab: string) => void;
 }
 
-export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount }: NotificationPanelProps) {
+export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount, onNavigateToTab }: NotificationPanelProps) {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,6 +61,15 @@ export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount 
     await supabase.from('admin_notifications').update({ is_read: true }).eq('id', id);
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
     loadUnreadCount();
+  };
+
+  const handleNotificationClick = async (n: Notification) => {
+    if (!n.is_read) await markOneAsRead(n.id);
+    const tab = getTabTarget(n.type);
+    if (tab && onNavigateToTab) {
+      onNavigateToTab(tab);
+      setOpen(false);
+    }
   };
 
   const handleMarkAllRead = async () => {
@@ -121,9 +131,10 @@ export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount 
                 {notifications.map(n => (
                   <div
                     key={n.id}
-                    className={`flex items-start gap-3 px-4 py-3 transition-colors ${
+                    className={`flex items-start gap-3 px-4 py-3 transition-colors cursor-pointer ${
                       !n.is_read ? 'bg-primary/5' : ''
                     } hover:bg-muted/50`}
+                    onClick={() => handleNotificationClick(n)}
                   >
                     <div className="mt-0.5 shrink-0">{getIcon(n.type)}</div>
                     <div className="flex-1 min-w-0">
