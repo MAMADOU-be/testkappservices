@@ -1,8 +1,9 @@
 import { Phone, Mail, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
-    <footer id="contact" className="bg-foreground text-background">
+    <footer className="bg-foreground text-background">
       <div className="container-narrow mx-auto section-padding">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
@@ -56,9 +57,9 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Informations</h4>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><a href="#" className="hover:text-primary transition-colors">Mentions légales</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Politique de confidentialité</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Conditions générales</a></li>
+              <li><Link to="/mentions-legales" className="hover:text-primary transition-colors">Mentions légales</Link></li>
+              <li><Link to="/confidentialite" className="hover:text-primary transition-colors">Politique de confidentialité</Link></li>
+              <li><Link to="/conditions-generales" className="hover:text-primary transition-colors">Conditions générales</Link></li>
               <li className="pt-2 border-t border-background/10 mt-2">
                 <a href="/auth" className="hover:text-primary transition-colors">Espace employé</a>
               </li>
@@ -68,7 +69,7 @@ export function Footer() {
 
         {/* Bottom */}
         <div className="pt-8 border-t border-background/10 text-center text-sm text-background/50">
-          <p>© 2012-2024 Kap-Services SRL. Tous droits réservés.</p>
+          <p>© 2012-{new Date().getFullYear()} Kap-Services SRL. Tous droits réservés.</p>
         </div>
       </div>
     </footer>

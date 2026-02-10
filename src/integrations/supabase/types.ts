@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          reference_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          reference_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          reference_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      job_applications: {
+        Row: {
+          city: string
+          created_at: string
+          email: string
+          employment_type: string
+          first_name: string
+          has_clientele: string
+          house_number: string
+          id: string
+          last_name: string
+          message: string | null
+          notes: string | null
+          phone: string
+          plan_impulsion: string
+          postal_code: string
+          status: string
+          street: string
+          transport: string
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          email: string
+          employment_type: string
+          first_name: string
+          has_clientele: string
+          house_number: string
+          id?: string
+          last_name: string
+          message?: string | null
+          notes?: string | null
+          phone: string
+          plan_impulsion: string
+          postal_code: string
+          status?: string
+          street: string
+          transport: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          email?: string
+          employment_type?: string
+          first_name?: string
+          has_clientele?: string
+          house_number?: string
+          id?: string
+          last_name?: string
+          message?: string | null
+          notes?: string | null
+          phone?: string
+          plan_impulsion?: string
+          postal_code?: string
+          status?: string
+          street?: string
+          transport?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -143,6 +236,24 @@ export type Database = {
           status?: string
           street?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          is_online: boolean
+          last_seen: string
+          user_id: string
+        }
+        Insert: {
+          is_online?: boolean
+          last_seen?: string
+          user_id: string
+        }
+        Update: {
+          is_online?: boolean
+          last_seen?: string
+          user_id?: string
         }
         Relationships: []
       }

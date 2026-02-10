@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, LogIn } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, LogIn, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { href: "#accueil", label: "Accueil" },
-  { href: "#apropos", label: "Qui sommes-nous" },
+  { href: "#apropos", label: "À propos" },
   { href: "#services", label: "Nos services" },
-  { href: "#comment", label: "Comment \u00e7a marche" },
+  { href: "#comment", label: "Comment ça marche" },
   { href: "#agences", label: "Nos agences" },
   { href: "#faq", label: "FAQ" },
   { href: "#jobs", label: "Jobs" },
@@ -17,7 +17,13 @@ const navLinks = [
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-card">
@@ -48,14 +54,29 @@ export function Header() {
           </nav>
 
           {/* CTA */}
-          <div className="hidden md:flex items-center gap-4">
-            <Button asChild variant="outline" className="transition-all duration-300 hover:scale-105">
-              <Link to={user ? "/profile" : "/auth"}>
-                <LogIn className="w-4 h-4 mr-2" />
-                {user ? "Mon compte" : "Se connecter"}
-              </Link>
-            </Button>
-            <Button asChild className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
+              <>
+                <Button asChild variant="outline" size="sm" className="transition-all duration-300 hover:scale-105">
+                  <Link to="/profile">
+                    <UserCircle className="w-4 h-4 mr-1.5" />
+                    Mon compte
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+                  <LogOut className="w-4 h-4 mr-1.5" />
+                  Déconnexion
+                </Button>
+              </>
+            ) : (
+              <Button asChild variant="outline" size="sm" className="transition-all duration-300 hover:scale-105">
+                <Link to="/auth">
+                  <LogIn className="w-4 h-4 mr-1.5" />
+                  Se connecter
+                </Link>
+              </Button>
+            )}
+            <Button asChild size="sm" className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
               <a href="#demande">Demander un devis</a>
             </Button>
           </div>
@@ -83,14 +104,29 @@ export function Header() {
                   {link.label}
                 </a>
               ))}
-              <Button asChild variant="outline" className="mt-2 transition-all duration-300 hover:scale-105">
-                <Link to={user ? "/profile" : "/auth"} onClick={() => setIsOpen(false)}>
-                  <LogIn className="w-4 h-4 mr-2" />
-                  {user ? "Mon compte" : "Se connecter"}
-                </Link>
-              </Button>
+              {user ? (
+                <>
+                  <Button asChild variant="outline" className="mt-2">
+                    <Link to="/profile" onClick={() => setIsOpen(false)}>
+                      <UserCircle className="w-4 h-4 mr-2" />
+                      Mon compte
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="mt-1 text-muted-foreground" onClick={() => { handleLogout(); setIsOpen(false); }}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Déconnexion
+                  </Button>
+                </>
+              ) : (
+                <Button asChild variant="outline" className="mt-2">
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Se connecter
+                  </Link>
+                </Button>
+              )}
               <Button asChild className="btn-accent border-0 mt-2 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <a href="#demande">Demander un devis</a>
+                <a href="#demande" onClick={() => setIsOpen(false)}>Demander un devis</a>
               </Button>
             </div>
           </nav>

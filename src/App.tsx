@@ -10,6 +10,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import LegalMentions from "./pages/LegalMentions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsConditions from "./pages/TermsConditions";
 import NotFound from "./pages/NotFound";
 import { Navigate } from "react-router-dom";
 
@@ -38,6 +41,9 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/mentions-legales" element={<LegalMentions />} />
+              <Route path="/confidentialite" element={<PrivacyPolicy />} />
+              <Route path="/conditions-generales" element={<TermsConditions />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
