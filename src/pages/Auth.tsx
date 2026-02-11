@@ -156,54 +156,7 @@ const Auth = () => {
     );
   }
 
-  const PasswordInput = ({ id, label }: { id: string; label: string }) => (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      <div className="relative">
-        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          id={id}
-          type={showPassword ? 'text' : 'password'}
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="pl-10 pr-10"
-        />
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-          tabIndex={-1}
-        >
-          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
-      </div>
-      {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-    </div>
-  );
-
-  const PasswordStrengthIndicator = () => {
-    if (!password) return null;
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Force du mot de passe</span>
-          <span className={`text-xs font-medium ${strength.score <= 2 ? 'text-destructive' : strength.score <= 4 ? 'text-yellow-600' : 'text-green-600'}`}>
-            {strengthInfo.label}
-          </span>
-        </div>
-        <Progress value={(strength.score / 6) * 100} className="h-1.5" />
-        <div className="grid grid-cols-2 gap-1 text-xs">
-          <PasswordCheck ok={strength.checks.minLength} label="6 caractères min." />
-          <PasswordCheck ok={strength.checks.hasUppercase} label="Majuscule" />
-          <PasswordCheck ok={strength.checks.hasLowercase} label="Minuscule" />
-          <PasswordCheck ok={strength.checks.hasNumber} label="Chiffre" />
-          <PasswordCheck ok={strength.checks.hasSpecial} label="Caractère spécial" />
-          <PasswordCheck ok={strength.checks.isLong} label="10+ caractères" />
-        </div>
-      </div>
-    );
-  };
+  const passwordInputType = showPassword ? 'text' : 'password';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-muted/30 p-4">
@@ -245,7 +198,17 @@ const Auth = () => {
                     {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                   </div>
                   
-                  <PasswordInput id="login-password" label="Mot de passe" />
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">Mot de passe</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input id="login-password" type={passwordInputType} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                  </div>
                   
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Connexion...</>) : 'Se connecter'}
@@ -273,8 +236,36 @@ const Auth = () => {
                     {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                   </div>
                   
-                  <PasswordInput id="register-password" label="Mot de passe" />
-                  <PasswordStrengthIndicator />
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password">Mot de passe</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input id="register-password" type={passwordInputType} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                  </div>
+                  {password && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Force du mot de passe</span>
+                        <span className={`text-xs font-medium ${strength.score <= 2 ? 'text-destructive' : strength.score <= 4 ? 'text-yellow-600' : 'text-green-600'}`}>
+                          {strengthInfo.label}
+                        </span>
+                      </div>
+                      <Progress value={(strength.score / 6) * 100} className="h-1.5" />
+                      <div className="grid grid-cols-2 gap-1 text-xs">
+                        <PasswordCheck ok={strength.checks.minLength} label="6 caractères min." />
+                        <PasswordCheck ok={strength.checks.hasUppercase} label="Majuscule" />
+                        <PasswordCheck ok={strength.checks.hasLowercase} label="Minuscule" />
+                        <PasswordCheck ok={strength.checks.hasNumber} label="Chiffre" />
+                        <PasswordCheck ok={strength.checks.hasSpecial} label="Caractère spécial" />
+                        <PasswordCheck ok={strength.checks.isLong} label="10+ caractères" />
+                      </div>
+                    </div>
+                  )}
                   
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Inscription...</>) : 'S\'inscrire'}
