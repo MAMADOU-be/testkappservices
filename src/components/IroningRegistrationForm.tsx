@@ -24,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Shirt, FileSignature, ListChecks, User, Download } from "lucide-react";
+import { Shirt, FileSignature, ListChecks, User, Download, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -112,6 +112,21 @@ export function IroningRegistrationForm() {
       }
     }
   }, [user, profile, form]);
+
+  // Scroll to first error on validation failure
+  useEffect(() => {
+    const errors = form.formState.errors;
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length > 0) {
+      const firstErrorKey = errorKeys[0];
+      const el = document.querySelector(`[name="${firstErrorKey}"]`) 
+        || document.getElementById(firstErrorKey);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        (el as HTMLElement).focus?.();
+      }
+    }
+  }, [form.formState.submitCount]);
 
   const onSubmit = async (data: FormData) => {
     if (!signature) {
@@ -484,6 +499,16 @@ export function IroningRegistrationForm() {
                     </FormItem>
                   )}
                 />
+
+                {/* Error indicator */}
+                {form.formState.isSubmitted && (Object.keys(form.formState.errors).length > 0 || (!signature)) && (
+                  <div className="flex items-center gap-3 p-4 rounded-xl border border-destructive/50 bg-destructive/10 text-destructive text-sm">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <p>
+                      Des erreurs ont été détectées dans le formulaire. Veuillez vérifier et corriger les champs indiqués en rouge ci-dessus.
+                    </p>
+                  </div>
+                )}
 
                 {/* Submit */}
                 <div className="flex justify-center">
