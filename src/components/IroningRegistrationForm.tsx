@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,7 +7,6 @@ import { SignatureCanvas } from "@/components/SignatureCanvas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -25,7 +24,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Shirt, FileSignature, ListChecks, User } from "lucide-react";
+import { Shirt, FileSignature, ListChecks, User, Download } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 const formSchema = z.object({
   firstName: z.string().trim().min(1, "Prénom requis").max(100),
@@ -36,7 +37,6 @@ const formSchema = z.object({
   city: z.string().trim().min(1, "Ville requise").max(100),
   postalCode: z.string().trim().min(1, "Code postal requis").max(10),
   agency: z.string().min(1, "Choisissez une agence"),
-  // Desiderata
   foldingPreference: z.string().min(1, "Choisissez une préférence"),
   starchPreference: z.string().min(1, "Choisissez une option"),
   specialCare: z.string().max(500).optional(),
@@ -70,6 +70,8 @@ const starchOptions = [
 export function IroningRegistrationForm() {
   const [signature, setSignature] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const { profile } = useProfile();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -89,6 +91,28 @@ export function IroningRegistrationForm() {
     },
   });
 
+  // Pre-fill form with user profile data when available
+  useEffect(() => {
+    if (user && profile) {
+      const nameParts = (profile.display_name || "").split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      if (firstName && !form.getValues("firstName")) {
+        form.setValue("firstName", firstName);
+      }
+      if (lastName && !form.getValues("lastName")) {
+        form.setValue("lastName", lastName);
+      }
+      if (user.email && !form.getValues("email")) {
+        form.setValue("email", user.email);
+      }
+      if (profile.phone && !form.getValues("phone")) {
+        form.setValue("phone", profile.phone);
+      }
+    }
+  }, [user, profile, form]);
+
   const onSubmit = async (data: FormData) => {
     if (!signature) {
       toast.error("Veuillez signer le formulaire avant de soumettre.");
@@ -97,12 +121,17 @@ export function IroningRegistrationForm() {
 
     setIsSubmitting(true);
     try {
-      // Simulate submission - will be connected to backend later
       await new Promise((resolve) => setTimeout(resolve, 1500));
       toast.success(
         "Inscription repassage envoyée ! Nous vous contacterons sous 48h."
       );
-      form.reset();
+      // Only reset desiderata + signature, keep personal info
+      form.setValue("agency", "");
+      form.setValue("foldingPreference", "");
+      form.setValue("starchPreference", "");
+      form.setValue("specialCare", "");
+      form.setValue("fragileItems", "");
+      form.setValue("acceptTerms", false as any);
       setSignature(null);
     } catch {
       toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
@@ -129,6 +158,32 @@ export function IroningRegistrationForm() {
 
         <ScrollAnimation animation="fade-up" delay={100}>
           <div className="max-w-3xl mx-auto bg-card rounded-2xl border border-border/50 p-6 md:p-8">
+            {/* Contract download links */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-xl bg-secondary/40 border border-border/50">
+              <div className="text-sm text-muted-foreground mb-2 sm:mb-0 sm:mr-auto flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                <span>Télécharger les contrats :</span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <a
+                  href="/contrats/convention-repassage-2025.docx"
+                  download
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Convention repassage
+                </a>
+                <a
+                  href="/contrats/convention-titres-services-2025.docx"
+                  download
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Convention titres-services
+                </a>
+              </div>
+            </div>
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 {/* Section 1: Coordonnées */}
@@ -264,7 +319,7 @@ export function IroningRegistrationForm() {
                           <FormLabel>Agence de dépôt</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -291,7 +346,7 @@ export function IroningRegistrationForm() {
                           <FormLabel>Préférence de pliage</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -318,7 +373,7 @@ export function IroningRegistrationForm() {
                           <FormLabel>Amidon</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
