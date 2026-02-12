@@ -70,6 +70,7 @@ const starchOptions = [
 export function IroningRegistrationForm() {
   const [signature, setSignature] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const { user } = useAuth();
   const { profile } = useProfile();
 
@@ -129,6 +130,7 @@ export function IroningRegistrationForm() {
   }, [form.formState.submitCount]);
 
   const onSubmit = async (data: FormData) => {
+    setIsSuccess(false);
     if (!signature) {
       toast.error("Veuillez signer le formulaire avant de soumettre.");
       return;
@@ -148,6 +150,7 @@ export function IroningRegistrationForm() {
       form.setValue("fragileItems", "");
       form.setValue("acceptTerms", false as any);
       setSignature(null);
+      setIsSuccess(true);
     } catch {
       toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
     } finally {
@@ -501,7 +504,7 @@ export function IroningRegistrationForm() {
                 />
 
                 {/* Error indicator */}
-                {form.formState.isSubmitted && (Object.keys(form.formState.errors).length > 0 || (!signature)) && (
+                {!isSuccess && form.formState.isSubmitted && (Object.keys(form.formState.errors).length > 0 || (!signature)) && (
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-destructive/50 bg-destructive/10 text-destructive text-sm">
                     <AlertCircle className="w-5 h-5 shrink-0" />
                     <p>
