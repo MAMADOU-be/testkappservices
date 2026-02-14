@@ -13,6 +13,13 @@
 
     <meta name="author" content="Kap Services" />
 
+    <!-- GOOGLE SEARCH CONSOLE VERIFICATION -->
+    <!-- Remplacez VOTRE_CODE_VERIFICATION par votre code Google Search Console -->
+    <meta name="google-site-verification" content="VOTRE_CODE_VERIFICATION" />
+
+    <!-- CANONICAL -->
+    <link rel="canonical" href="https://kap-services.be/" />
+
     <!-- OPEN GRAPH -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Kap Services - Titres-Services Liège, Mont-sur-Marchienne, Lobbes" />
@@ -32,6 +39,41 @@
     <!-- PRECONNECT (Performance) -->
     <link rel="preconnect" href="https://kap-services.be" crossorigin />
 
+    <!-- SCHEMA ORGANISATION -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Kap Services SRL",
+      "legalName": "Kap Services SRL",
+      "url": "https://kap-services.be",
+      "logo": "https://storage.googleapis.com/gpt-engineer-file-uploads/218erYSH9XavGV0r7ILwRcN6F3u2/uploads/1770761927522-LOGO_JTECH.png",
+      "description": "Agence de titres-services agréée par la Région Wallonne, spécialisée en aide ménagère et repassage à domicile.",
+      "foundingDate": "2010",
+      "taxID": "BE 0847.632.505",
+      "email": "info@kap-services.be",
+      "telephone": "+32 71 45 57 45",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Rue Winston Churchill 212A",
+        "postalCode": "6180",
+        "addressLocality": "Courcelles",
+        "addressRegion": "Hainaut",
+        "addressCountry": "BE"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+32 71 45 57 45",
+          "contactType": "customer service",
+          "availableLanguage": ["French"],
+          "areaServed": "BE"
+        }
+      ],
+      "sameAs": []
+    }
+    </script>
+
     <!-- SCHEMA LOCAL BUSINESS -->
     <script type="application/ld+json">
     {
@@ -39,23 +81,47 @@
       "@type": "LocalBusiness",
       "name": "Kap Services",
       "url": "https://kap-services.be",
+      "image": "https://storage.googleapis.com/gpt-engineer-file-uploads/218erYSH9XavGV0r7ILwRcN6F3u2/uploads/1770761927522-LOGO_JTECH.png",
       "description": "Agence de titres-services spécialisée en aide ménagère et repassage à domicile à Liège, Mont-sur-Marchienne et Lobbes.",
+      "priceRange": "€€",
       "areaServed": [
         {"@type": "City", "name": "Liège"},
         {"@type": "City", "name": "Mont-sur-Marchienne"},
-        {"@type": "City", "name": "Lobbes"}
+        {"@type": "City", "name": "Lobbes"},
+        {"@type": "City", "name": "Courcelles"},
+        {"@type": "City", "name": "Charleroi"},
+        {"@type": "City", "name": "Thuin"}
       ],
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "Rue Winston Churchill 212A",
         "postalCode": "6180",
         "addressLocality": "Courcelles",
+        "addressRegion": "Hainaut",
         "addressCountry": "BE"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "50.4601",
+        "longitude": "4.3701"
       },
       "telephone": "+32 71 45 57 45",
       "email": "info@kap-services.be",
       "taxID": "BE 0847.632.505",
-      "areaServed": "Région Wallonne"
+      "openingHoursSpecification": [
+        {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday"], "opens": "07:30", "closes": "18:00"},
+        {"@type": "OpeningHoursSpecification", "dayOfWeek": "Friday", "opens": "07:30", "closes": "17:00"},
+        {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "12:15"}
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Services titres-services",
+        "itemListElement": [
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Aide ménagère à domicile"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Repassage professionnel"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Transport PMR"}}
+        ]
+      }
     }
     </script>
   </head>
