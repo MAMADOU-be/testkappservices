@@ -10,10 +10,11 @@ import { FAQ } from "@/components/FAQ";
 import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { IroningRegistrationForm } from "@/components/IroningRegistrationForm";
+import { BackToTop } from "@/components/BackToTop";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen scroll-smooth">
       <Header />
       <main>
         <Hero />
@@ -28,6 +29,7 @@ const Index = () => {
         <Contact />
       </main>
       <Footer />
+      <BackToTop />
     </div>
   );
 };
