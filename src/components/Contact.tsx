@@ -86,8 +86,8 @@ export function Contact() {
             Contactez-nous
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Une question ? N'hésitez pas à nous contacter par téléphone, email ou via le formulaire
-            ci-dessous.
+            Contactez-nous dès aujourd'hui pour planifier votre service de repassage à domicile 
+            ou votre aide ménagère à Courcelles, Mont-sur-Marchienne ou Lobbes.
           </p>
         </ScrollAnimation>
 

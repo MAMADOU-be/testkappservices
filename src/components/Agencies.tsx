@@ -74,7 +74,8 @@ export function Agencies() {
             Nos agences
           </h2>
           <p className="text-muted-foreground">
-            Présents dans la région de Charleroi, nous sommes proches de vous pour mieux vous servir.
+            Interventions à domicile à Courcelles, Mont-sur-Marchienne et Lobbes. 
+            Service rapide et flexible selon vos besoins, avec facturation simplifiée via le système des titres-services.
           </p>
         </ScrollAnimation>
 
