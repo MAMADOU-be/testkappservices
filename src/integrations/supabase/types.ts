@@ -348,6 +348,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_assigned_to_client: {
+        Args: { _client_user_id: string; _employee_id: string }
+        Returns: boolean
+      }
       process_referral: {
         Args: { _referral_code: string; _referred_user_id: string }
         Returns: boolean
