@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { StatsSkeleton, TableSkeleton } from '@/components/skeletons/DashboardSkeletons';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -211,11 +212,10 @@ export function ServiceRequestsTable() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <StatsSkeleton count={4} />
+        <TableSkeleton rows={5} cols={6} />
+      </div>
     );
   }
 

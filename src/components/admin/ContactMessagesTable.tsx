@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { TableSkeleton } from '@/components/skeletons/DashboardSkeletons';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -106,11 +107,7 @@ export function ContactMessagesTable() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
+    return <TableSkeleton rows={4} cols={4} />;
   }
 
   return (

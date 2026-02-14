@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ContractsSkeleton, RequestCardSkeleton } from '@/components/skeletons/DashboardSkeletons';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,11 +73,10 @@ export function ClientRequestsView() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <ContractsSkeleton />
+        <RequestCardSkeleton count={3} />
+      </div>
     );
   }
 

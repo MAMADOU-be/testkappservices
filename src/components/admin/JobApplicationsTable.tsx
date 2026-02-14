@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { StatsSkeleton, TableSkeleton } from '@/components/skeletons/DashboardSkeletons';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -143,7 +144,12 @@ export function JobApplicationsTable() {
   const pendingCount = applications.filter(a => a.status === 'pending').length;
 
   if (isLoading) {
-    return <Card><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></CardContent></Card>;
+    return (
+      <div className="space-y-6">
+        <StatsSkeleton count={3} />
+        <TableSkeleton rows={4} cols={5} />
+      </div>
+    );
   }
 
   return (
