@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { RequestCardSkeleton } from '@/components/skeletons/DashboardSkeletons';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -79,8 +80,8 @@ const EmployeeDashboard = () => {
   if (isLoading) {
     return (
       <Card className="mt-6">
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <CardContent className="pt-6">
+          <RequestCardSkeleton count={3} />
         </CardContent>
       </Card>
     );
