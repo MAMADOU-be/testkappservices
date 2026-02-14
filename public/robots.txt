@@ -1,14 +1,36 @@
+# Règles pour tous les moteurs de recherche
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /auth
+Disallow: /.git
+Disallow: /node_modules
+Disallow: /dist
+
+# Référence au sitemap XML
+Sitemap: https://kap-services.be/sitemap.xml
+
+# Délai de crawl (en secondes)
+Crawl-delay: 1
+
+# Règles spécifiques pour Googlebot
 User-agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /auth
 
+# Règles spécifiques pour Bingbot
 User-agent: Bingbot
 Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /auth
 
+# Règles spécifiques pour les réseaux sociaux
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
 Allow: /
