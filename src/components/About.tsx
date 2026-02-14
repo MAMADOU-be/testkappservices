@@ -46,8 +46,9 @@ export function About() {
             Qui sommes-nous ?
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Depuis 2008, Kap-Services s'engage à offrir un service de qualité, 
-            de confort et de proximité adapté à vos besoins.
+            Depuis 2008, Kap Services est votre partenaire de confiance pour un intérieur propre et organisé. 
+            Agence titres-services agréée par la Région Wallonne, nous offrons des services professionnels 
+            d'aide ménagère à domicile et de repassage, avec un personnel qualifié et discret.
           </p>
         </ScrollAnimation>
 

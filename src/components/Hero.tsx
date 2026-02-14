@@ -22,13 +22,14 @@ export function Hero() {
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-              Votre maison,{" "}
-              <span className="text-gradient-primary">notre passion</span>
+              Aide ménagère &amp; repassage,{" "}
+              <span className="text-gradient-primary">à votre service</span>
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-lg">
-              Kap-Services vous offre un service de nettoyage de qualité, 
-              adapté à vos besoins et à votre emploi du temps. 
+              Kap Services est votre agence de titres-services de confiance en Belgique. 
+              Nos femmes de ménage agréées assurent un entretien complet de votre domicile : 
+              nettoyage, repassage, organisation. 
               Profitez des titres-services pour seulement <strong className="text-foreground">9€ après déduction fiscale</strong>.
             </p>
 
