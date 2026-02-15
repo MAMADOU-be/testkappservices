@@ -1,13 +1,12 @@
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Language, languageFlags, languageNames } from '@/i18n/translations';
+import { Language, languageNames } from '@/i18n/translations';
+import { FlagIcon } from '@/components/FlagIcon';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Globe } from 'lucide-react';
-
 const languages: Language[] = ['fr', 'nl', 'en'];
 
 interface LanguageSwitcherProps {
@@ -28,8 +27,8 @@ export function LanguageSwitcher({ variant = 'header' }: LanguageSwitcherProps) 
           }`}
           aria-label="Change language"
         >
-          <Globe className="w-4 h-4" />
-          <span>{languageFlags[language]} {language.toUpperCase()}</span>
+          <FlagIcon lang={language} />
+          <span>{language.toUpperCase()}</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">
@@ -41,7 +40,7 @@ export function LanguageSwitcher({ variant = 'header' }: LanguageSwitcherProps) 
               language === lang ? 'bg-primary/10 text-primary font-medium' : ''
             }`}
           >
-            <span className="text-base">{languageFlags[lang]}</span>
+            <FlagIcon lang={lang} />
             <span>{languageNames[lang]}</span>
           </DropdownMenuItem>
         ))}
