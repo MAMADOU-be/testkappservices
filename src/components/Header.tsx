@@ -4,17 +4,8 @@ import { Menu, X, LogIn, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveSection } from "@/hooks/useActiveSection";
-
-const navLinks = [
-  { href: "#accueil", label: "Accueil" },
-  { href: "#apropos", label: "À propos" },
-  { href: "#services", label: "Nos services" },
-  { href: "#comment", label: "Comment ça marche" },
-  { href: "#agences", label: "Nos agences" },
-  { href: "#faq", label: "FAQ" },
-  { href: "#jobs", label: "Jobs" },
-  { href: "#contact", label: "Contact" },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,6 +13,18 @@ export function Header() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const activeSection = useActiveSection();
+  const { t } = useLanguage();
+
+  const navLinks = [
+    { href: "#accueil", label: t('nav.home') },
+    { href: "#apropos", label: t('nav.about') },
+    { href: "#services", label: t('nav.services') },
+    { href: "#comment", label: t('nav.howItWorks') },
+    { href: "#agences", label: t('nav.agencies') },
+    { href: "#faq", label: t('nav.faq') },
+    { href: "#jobs", label: t('nav.jobs') },
+    { href: "#contact", label: t('nav.contact') },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -29,7 +32,6 @@ export function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -60,7 +62,7 @@ export function Header() {
               </div>
               <div className={`hidden sm:block transition-all duration-300 ${scrolled ? 'opacity-80 -translate-x-0.5' : 'opacity-100'}`}>
                 <p className="font-semibold text-foreground group-hover:text-primary transition-colors">Kap-Services</p>
-                <p className={`text-xs text-muted-foreground transition-all duration-300 ${scrolled ? 'h-0 opacity-0 -mt-1' : 'h-auto opacity-100'}`}>Titres-services agréés</p>
+                <p className={`text-xs text-muted-foreground transition-all duration-300 ${scrolled ? 'h-0 opacity-0 -mt-1' : 'h-auto opacity-100'}`}>{t('nav.subtitle')}</p>
               </div>
             </a>
 
@@ -90,30 +92,31 @@ export function Header() {
             </nav>
 
             {/* CTA */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2">
+              <LanguageSwitcher variant="header" />
               {user ? (
                 <>
                   <Button asChild variant="outline" size="sm" className="transition-all duration-300 hover:scale-105">
                     <Link to="/profile">
                       <UserCircle className="w-4 h-4 mr-1.5" />
-                      Mon compte
+                      {t('nav.myAccount')}
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
                     <LogOut className="w-4 h-4 mr-1.5" />
-                    Déconnexion
+                    {t('nav.logout')}
                   </Button>
                 </>
               ) : (
                 <Button asChild variant="outline" size="sm" className="transition-all duration-300 hover:scale-105">
                   <Link to="/auth">
                     <LogIn className="w-4 h-4 mr-1.5" />
-                    Se connecter
+                    {t('nav.login')}
                   </Link>
                 </Button>
               )}
               <Button asChild size="sm" className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <a href="#demande" onClick={(e) => { e.preventDefault(); handleNavClick('#demande'); }}>Demander un devis</a>
+                <a href="#demande" onClick={(e) => { e.preventDefault(); handleNavClick('#demande'); }}>{t('nav.requestQuote')}</a>
               </Button>
             </div>
 
@@ -135,7 +138,6 @@ export function Header() {
           isOpen ? 'visible' : 'invisible pointer-events-none'
         }`}
       >
-        {/* Backdrop */}
         <div
           className={`absolute inset-0 bg-foreground/50 transition-opacity duration-500 ease-out ${
             isOpen ? 'opacity-100 backdrop-blur-md' : 'opacity-0 backdrop-blur-none'
@@ -143,13 +145,23 @@ export function Header() {
           onClick={() => setIsOpen(false)}
         />
 
-        {/* Slide-in panel */}
         <nav
           className={`absolute top-0 right-0 w-4/5 max-w-sm h-full bg-card shadow-2xl overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
             isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-95'
           }`}
         >
           <div className="flex flex-col gap-1 pt-20 px-6 pb-8">
+            {/* Language switcher mobile */}
+            <div className="mb-4 flex justify-end"
+              style={{
+                transitionDelay: isOpen ? '60ms' : '0ms',
+                opacity: isOpen ? 1 : 0,
+                transition: 'opacity 0.3s ease',
+              }}
+            >
+              <LanguageSwitcher variant="header" />
+            </div>
+
             {navLinks.map((link, index) => {
               const sectionId = link.href.replace('#', '');
               const isActive = activeSection === sectionId;
@@ -165,9 +177,7 @@ export function Header() {
                   style={{
                     transitionDelay: isOpen ? `${80 + index * 40}ms` : '0ms',
                     opacity: isOpen ? 1 : 0,
-                    transform: isOpen
-                      ? (isActive ? 'translateX(0)' : 'translateX(0)')
-                      : 'translateX(24px)',
+                    transform: isOpen ? 'translateX(0)' : 'translateX(24px)',
                   }}
                   onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
                 >
@@ -189,24 +199,24 @@ export function Header() {
                   <Button asChild variant="outline">
                     <Link to="/profile" onClick={() => setIsOpen(false)}>
                       <UserCircle className="w-4 h-4 mr-2" />
-                      Mon compte
+                      {t('nav.myAccount')}
                     </Link>
                   </Button>
                   <Button variant="ghost" className="text-muted-foreground" onClick={() => { handleLogout(); setIsOpen(false); }}>
                     <LogOut className="w-4 h-4 mr-2" />
-                    Déconnexion
+                    {t('nav.logout')}
                   </Button>
                 </>
               ) : (
                 <Button asChild variant="outline">
                   <Link to="/auth" onClick={() => setIsOpen(false)}>
                     <LogIn className="w-4 h-4 mr-2" />
-                    Se connecter
+                    {t('nav.login')}
                   </Link>
                 </Button>
               )}
               <Button asChild className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <a href="#demande" onClick={(e) => { e.preventDefault(); handleNavClick('#demande'); }}>Demander un devis</a>
+                <a href="#demande" onClick={(e) => { e.preventDefault(); handleNavClick('#demande'); }}>{t('nav.requestQuote')}</a>
               </Button>
             </div>
           </div>

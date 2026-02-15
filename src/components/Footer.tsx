@@ -1,7 +1,11 @@
 import { Phone, Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="bg-foreground text-background">
       <div className="container-narrow mx-auto section-padding">
@@ -17,26 +21,27 @@ export function Footer() {
                 <p className="text-xs text-background/60">SRL</p>
               </div>
             </div>
-            <p className="text-background/70 text-sm">
-              Société agréée titres-services depuis 2012. Un service de qualité, de confort et de proximité.
+            <p className="text-background/70 text-sm mb-4">
+              {t('footer.description')}
             </p>
+            <LanguageSwitcher variant="footer" />
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-semibold mb-4">Navigation</h4>
+            <h4 className="font-semibold mb-4">{t('footer.navigation')}</h4>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><a href="#accueil" className="hover:text-primary transition-colors">Accueil</a></li>
-              <li><a href="#services" className="hover:text-primary transition-colors">Nos services</a></li>
-              <li><a href="#comment" className="hover:text-primary transition-colors">Comment ça marche</a></li>
-              <li><a href="#agences" className="hover:text-primary transition-colors">Nos agences</a></li>
-              <li><a href="#jobs" className="hover:text-primary transition-colors">Jobs</a></li>
+              <li><a href="#accueil" className="hover:text-primary transition-colors">{t('nav.home')}</a></li>
+              <li><a href="#services" className="hover:text-primary transition-colors">{t('nav.services')}</a></li>
+              <li><a href="#comment" className="hover:text-primary transition-colors">{t('nav.howItWorks')}</a></li>
+              <li><a href="#agences" className="hover:text-primary transition-colors">{t('nav.agencies')}</a></li>
+              <li><a href="#jobs" className="hover:text-primary transition-colors">{t('nav.jobs')}</a></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
+            <h4 className="font-semibold mb-4">{t('footer.contact')}</h4>
             <ul className="space-y-3 text-sm text-background/70">
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-primary" />
@@ -55,21 +60,20 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-semibold mb-4">Informations</h4>
+            <h4 className="font-semibold mb-4">{t('footer.info')}</h4>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><Link to="/mentions-legales" className="hover:text-primary transition-colors">Mentions légales</Link></li>
-              <li><Link to="/confidentialite" className="hover:text-primary transition-colors">Politique de confidentialité</Link></li>
-              <li><Link to="/conditions-generales" className="hover:text-primary transition-colors">Conditions générales</Link></li>
+              <li><Link to="/mentions-legales" className="hover:text-primary transition-colors">{t('footer.legalMentions')}</Link></li>
+              <li><Link to="/confidentialite" className="hover:text-primary transition-colors">{t('footer.privacy')}</Link></li>
+              <li><Link to="/conditions-generales" className="hover:text-primary transition-colors">{t('footer.terms')}</Link></li>
               <li className="pt-2 border-t border-background/10 mt-2">
-                <a href="/auth" className="hover:text-primary transition-colors">Espace employé</a>
+                <a href="/auth" className="hover:text-primary transition-colors">{t('footer.employeeArea')}</a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom */}
         <div className="pt-8 border-t border-background/10 text-center text-sm text-background/50">
-          <p>© 2012-{new Date().getFullYear()} Kap-Services SRL. Tous droits réservés.</p>
+          <p>© 2012-{new Date().getFullYear()} {t('footer.copyright')}</p>
         </div>
       </div>
     </footer>
