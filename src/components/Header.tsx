@@ -50,7 +50,7 @@ export function Header() {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'glass-card shadow-sm' : 'bg-transparent'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${scrolled ? 'glass-card shadow-md py-0' : 'bg-transparent py-1'}`} style={{ backdropFilter: scrolled ? 'blur(12px) saturate(180%)' : 'blur(0px) saturate(100%)' }}>
         <div className="container-narrow mx-auto">
           <div className="flex items-center justify-between h-16 md:h-20 px-4">
             {/* Logo */}
