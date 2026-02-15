@@ -17,6 +17,7 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { ClientRequestsView } from '@/components/profile/ClientRequestsView';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import { ContactMessagesTable } from '@/components/admin/ContactMessagesTable';
+import { StatsDashboard } from '@/components/admin/StatsDashboard';
 import {
   Loader2,
   ArrowLeft,
@@ -28,6 +29,7 @@ import {
   Briefcase,
   Send,
   MessageSquare,
+  BarChart3,
 } from 'lucide-react';
 
 const Profile = () => {
@@ -88,7 +90,7 @@ const Profile = () => {
   };
 
   // Determine number of tabs
-  const gridCols = isAdmin ? 'grid-cols-6' : isStaff ? 'grid-cols-5' : 'grid-cols-3';
+  const gridCols = isAdmin ? 'grid-cols-7' : isStaff ? 'grid-cols-6' : 'grid-cols-3';
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -143,8 +145,14 @@ const Profile = () => {
       </header>
 
       <div className="container mx-auto px-4 py-4">
-        <Tabs value={activeTab || (isStaff ? 'requests' : 'my-requests')} onValueChange={setActiveTab} className="space-y-4">
+        <Tabs value={activeTab || (isStaff ? 'stats' : 'my-requests')} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className={`grid w-full max-w-2xl ${gridCols}`}>
+            {isStaff && (
+              <TabsTrigger value="stats" className="flex items-center gap-1.5 text-xs">
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Statistiques</span>
+              </TabsTrigger>
+            )}
             {isStaff && (
               <TabsTrigger value="requests" className="flex items-center gap-1.5 text-xs">
                 <FileText className="h-3.5 w-3.5" />
@@ -184,6 +192,12 @@ const Profile = () => {
               <span className="hidden sm:inline">Parrainage</span>
             </TabsTrigger>
           </TabsList>
+
+          {isStaff && (
+            <TabsContent value="stats">
+              <StatsDashboard />
+            </TabsContent>
+          )}
 
           {isStaff && (
             <TabsContent value="requests">
