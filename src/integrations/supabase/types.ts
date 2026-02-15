@@ -212,6 +212,36 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          employee_id: string | null
+          id: string
+          rating: number
+          service_request_id: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          rating: number
+          service_request_id: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          rating?: number
+          service_request_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       service_requests: {
         Row: {
           assigned_to: string | null

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, TrendingUp, Users, FileText, Briefcase, MessageSquare, CheckCircle } from 'lucide-react';
+import { Loader2, TrendingUp, Users, FileText, Briefcase, MessageSquare, CheckCircle, Star } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -56,17 +56,34 @@ export function StatsDashboard() {
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [jobApplications, setJobApplications] = useState<any[]>([]);
   const [contactMessages, setContactMessages] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [employeeProfiles, setEmployeeProfiles] = useState<Record<string, string>>({});
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
-    const [reqRes, jobRes, msgRes] = await Promise.all([
-      supabase.from('service_requests').select('id, status, service_type, created_at'),
+    const [reqRes, jobRes, msgRes, revRes] = await Promise.all([
+      supabase.from('service_requests').select('id, status, service_type, created_at, assigned_to'),
       supabase.from('job_applications').select('id, status, created_at'),
       supabase.from('contact_messages').select('id, is_read, created_at'),
+      supabase.from('reviews').select('id, rating, comment, employee_id, created_at'),
     ]);
     setServiceRequests(reqRes.data || []);
     setJobApplications(jobRes.data || []);
     setContactMessages(msgRes.data || []);
+    setReviews(revRes.data || []);
+
+    // Load employee names for reviews
+    const employeeIds = [...new Set((revRes.data || []).map((r: any) => r.employee_id).filter(Boolean))];
+    if (employeeIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name')
+        .in('user_id', employeeIds);
+      const map: Record<string, string> = {};
+      (profiles || []).forEach((p: any) => { map[p.user_id] = p.display_name || 'Employé'; });
+      setEmployeeProfiles(map);
+    }
+
     setIsLoading(false);
   }, []);
 
@@ -90,6 +107,29 @@ export function StatsDashboard() {
   const totalJobs = jobApplications.length;
   const totalMessages = contactMessages.length;
   const unreadMessages = contactMessages.filter(m => !m.is_read).length;
+
+  // Reviews stats
+  const totalReviews = reviews.length;
+  const avgRating = totalReviews > 0 ? (reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / totalReviews) : 0;
+
+  // Employee ratings
+  const employeeRatings: Record<string, { total: number; count: number; reviews: any[] }> = {};
+  reviews.forEach((r: any) => {
+    const empId = r.employee_id || 'unassigned';
+    if (!employeeRatings[empId]) employeeRatings[empId] = { total: 0, count: 0, reviews: [] };
+    employeeRatings[empId].total += r.rating;
+    employeeRatings[empId].count += 1;
+    employeeRatings[empId].reviews.push(r);
+  });
+  const employeeRatingsList = Object.entries(employeeRatings)
+    .filter(([id]) => id !== 'unassigned')
+    .map(([id, data]) => ({
+      id,
+      name: employeeProfiles[id] || 'Employé',
+      avg: data.total / data.count,
+      count: data.count,
+    }))
+    .sort((a, b) => b.avg - a.avg);
 
   // Monthly data (last 6 months)
   const monthlyData: MonthlyData[] = [];
@@ -149,7 +189,7 @@ export function StatsDashboard() {
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -208,6 +248,25 @@ export function StatsDashboard() {
                   )}
                 </p>
                 <p className="text-xs text-muted-foreground">Messages</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-400/10">
+                <Star className="h-5 w-5 text-amber-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {avgRating > 0 ? avgRating.toFixed(1) : '—'}
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    / 5
+                  </span>
+                </p>
+                <p className="text-xs text-muted-foreground">{totalReviews} avis</p>
               </div>
             </div>
           </CardContent>
@@ -404,6 +463,53 @@ export function StatsDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Employee Ratings */}
+      {employeeRatingsList.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" />
+              Avis par employé
+            </CardTitle>
+            <CardDescription>Moyenne des notes attribuées par les clients</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {employeeRatingsList.map((emp) => (
+                <div key={emp.id} className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                      {emp.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{emp.name}</p>
+                      <p className="text-xs text-muted-foreground">{emp.count} avis</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-3.5 w-3.5 ${
+                            star <= Math.round(emp.avg)
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-muted-foreground/30'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {emp.avg.toFixed(1)}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
