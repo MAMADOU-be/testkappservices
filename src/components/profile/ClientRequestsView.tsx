@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { ReviewForm } from '@/components/profile/ReviewForm';
 import {
   Loader2, FileText, Clock, CheckCircle, XCircle, Phone as PhoneIcon,
   MapPin, Calendar, Send, Download, Shirt, Home
@@ -28,6 +29,7 @@ interface ServiceRequest {
   preferred_day: string | null;
   status: string;
   comments: string | null;
+  assigned_to: string | null;
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
@@ -196,6 +198,12 @@ export function ClientRequestsView() {
                       <p className="text-xs text-muted-foreground">
                         Dernière mise à jour : {format(new Date(req.updated_at), "dd/MM/yyyy HH:mm", { locale: fr })}
                       </p>
+                    )}
+                    {req.status === 'completed' && (
+                      <ReviewForm
+                        serviceRequestId={req.id}
+                        employeeId={req.assigned_to}
+                      />
                     )}
                   </div>
                 );
