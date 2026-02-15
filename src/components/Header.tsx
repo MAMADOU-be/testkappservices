@@ -131,37 +131,44 @@ export function Header() {
 
       {/* Mobile overlay + menu */}
       <div
-        className={`fixed inset-0 z-40 transition-all duration-300 lg:hidden ${
-          isOpen ? 'visible' : 'invisible'
+        className={`fixed inset-0 z-40 transition-all duration-500 lg:hidden ${
+          isOpen ? 'visible' : 'invisible pointer-events-none'
         }`}
       >
         {/* Backdrop */}
         <div
-          className={`absolute inset-0 bg-foreground/40 backdrop-blur-sm transition-opacity duration-300 ${
-            isOpen ? 'opacity-100' : 'opacity-0'
+          className={`absolute inset-0 bg-foreground/50 transition-opacity duration-500 ease-out ${
+            isOpen ? 'opacity-100 backdrop-blur-md' : 'opacity-0 backdrop-blur-none'
           }`}
           onClick={() => setIsOpen(false)}
         />
 
         {/* Slide-in panel */}
         <nav
-          className={`absolute top-0 right-0 w-4/5 max-w-sm h-full bg-card shadow-xl transition-transform duration-300 ease-out overflow-y-auto ${
-            isOpen ? 'translate-x-0' : 'translate-x-full'
+          className={`absolute top-0 right-0 w-4/5 max-w-sm h-full bg-card shadow-2xl overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+            isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-95'
           }`}
         >
           <div className="flex flex-col gap-1 pt-20 px-6 pb-8">
-            {navLinks.map((link) => {
+            {navLinks.map((link, index) => {
               const sectionId = link.href.replace('#', '');
               const isActive = activeSection === sectionId;
               return (
                 <a
                   key={link.href}
                   href={link.href}
-                  className={`py-3 px-4 rounded-xl text-base font-medium transition-colors ${
+                  className={`py-3 px-4 rounded-xl text-base font-medium transition-all duration-300 ${
                     isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-primary'
+                      ? 'bg-primary/10 text-primary translate-x-0'
+                      : 'text-muted-foreground hover:bg-secondary hover:text-primary hover:translate-x-1'
                   }`}
+                  style={{
+                    transitionDelay: isOpen ? `${80 + index * 40}ms` : '0ms',
+                    opacity: isOpen ? 1 : 0,
+                    transform: isOpen
+                      ? (isActive ? 'translateX(0)' : 'translateX(0)')
+                      : 'translateX(24px)',
+                  }}
                   onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
                 >
                   {link.label}
@@ -169,7 +176,14 @@ export function Header() {
               );
             })}
 
-            <div className="border-t border-border mt-4 pt-4 flex flex-col gap-2">
+            <div
+              className="border-t border-border mt-4 pt-4 flex flex-col gap-2 transition-all duration-300"
+              style={{
+                transitionDelay: isOpen ? `${80 + navLinks.length * 40}ms` : '0ms',
+                opacity: isOpen ? 1 : 0,
+                transform: isOpen ? 'translateY(0)' : 'translateY(12px)',
+              }}
+            >
               {user ? (
                 <>
                   <Button asChild variant="outline">
