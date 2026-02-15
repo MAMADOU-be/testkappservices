@@ -65,7 +65,7 @@ export function Header() {
             </a>
 
             {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-6">
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-3">
               {navLinks.map((link) => {
                 const sectionId = link.href.replace('#', '');
                 const isActive = activeSection === sectionId;
@@ -74,15 +74,15 @@ export function Header() {
                     key={link.href}
                     href={link.href}
                     onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
-                    className={`text-sm font-medium transition-colors relative py-1 ${
+                    className={`text-[13px] xl:text-sm font-medium transition-colors relative py-1 px-2 rounded-md ${
                       isActive
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-primary'
+                        ? 'text-primary bg-primary/5'
+                        : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
                     }`}
                   >
                     {link.label}
                     {isActive && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full animate-scale-in" />
+                      <span className="absolute -bottom-0.5 left-2 right-2 h-0.5 bg-primary rounded-full animate-scale-in" />
                     )}
                   </a>
                 );
