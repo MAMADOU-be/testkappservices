@@ -16,14 +16,14 @@ export function Header() {
   const { t } = useLanguage();
 
   const navLinks = [
-    { href: "#accueil", label: t('nav.home') },
-    { href: "#apropos", label: t('nav.about') },
-    { href: "#services", label: t('nav.services') },
-    { href: "#comment", label: t('nav.howItWorks') },
-    { href: "#agences", label: t('nav.agencies') },
-    { href: "#faq", label: t('nav.faq') },
-    { href: "#jobs", label: t('nav.jobs') },
-    { href: "#contact", label: t('nav.contact') },
+    { href: "#accueil", label: t.nav.home },
+    { href: "#apropos", label: t.nav.about },
+    { href: "#services", label: t.nav.services },
+    { href: "#comment", label: t.nav.howItWorks },
+    { href: "#agences", label: t.nav.agencies },
+    { href: "#faq", label: t.nav.faq },
+    { href: "#jobs", label: t.nav.jobs },
+    { href: "#contact", label: t.nav.contact },
   ];
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export function Header() {
               </div>
               <div className={`hidden sm:block transition-all duration-300 ${scrolled ? 'opacity-80 -translate-x-0.5' : 'opacity-100'}`}>
                 <p className="font-semibold text-foreground group-hover:text-primary transition-colors">Kap-Services</p>
-                <p className={`text-xs text-muted-foreground transition-all duration-300 ${scrolled ? 'h-0 opacity-0 -mt-1' : 'h-auto opacity-100'}`}>{t('nav.subtitle')}</p>
+                <p className={`text-xs text-muted-foreground transition-all duration-300 ${scrolled ? 'h-0 opacity-0 -mt-1' : 'h-auto opacity-100'}`}>{t.nav.subtitle}</p>
               </div>
             </a>
 
@@ -99,24 +99,24 @@ export function Header() {
                   <Button asChild variant="outline" size="sm" className="transition-all duration-300 hover:scale-105">
                     <Link to="/profile">
                       <UserCircle className="w-4 h-4 mr-1.5" />
-                      {t('nav.myAccount')}
+                      {t.nav.myAccount}
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
                     <LogOut className="w-4 h-4 mr-1.5" />
-                    {t('nav.logout')}
+                    {t.nav.logout}
                   </Button>
                 </>
               ) : (
                 <Button asChild variant="outline" size="sm" className="transition-all duration-300 hover:scale-105">
                   <Link to="/auth">
                     <LogIn className="w-4 h-4 mr-1.5" />
-                    {t('nav.login')}
+                    {t.nav.login}
                   </Link>
                 </Button>
               )}
               <Button asChild size="sm" className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <a href="#demande" onClick={(e) => { e.preventDefault(); handleNavClick('#demande'); }}>{t('nav.requestQuote')}</a>
+                <a href="#demande" onClick={(e) => { e.preventDefault(); handleNavClick('#demande'); }}>{t.nav.requestQuote}</a>
               </Button>
             </div>
 
@@ -203,24 +203,24 @@ export function Header() {
                   <Button asChild variant="outline">
                     <Link to="/profile" onClick={() => setIsOpen(false)}>
                       <UserCircle className="w-4 h-4 mr-2" />
-                      {t('nav.myAccount')}
+                      {t.nav.myAccount}
                     </Link>
                   </Button>
                   <Button variant="ghost" className="text-muted-foreground" onClick={() => { handleLogout(); setIsOpen(false); }}>
                     <LogOut className="w-4 h-4 mr-2" />
-                    {t('nav.logout')}
+                    {t.nav.logout}
                   </Button>
                 </>
               ) : (
                 <Button asChild variant="outline">
                   <Link to="/auth" onClick={() => setIsOpen(false)}>
                     <LogIn className="w-4 h-4 mr-2" />
-                    {t('nav.login')}
+                    {t.nav.login}
                   </Link>
                 </Button>
               )}
               <Button asChild className="btn-accent border-0 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <a href="#demande" onClick={(e) => { e.preventDefault(); handleNavClick('#demande'); }}>{t('nav.requestQuote')}</a>
+                <a href="#demande" onClick={(e) => { e.preventDefault(); handleNavClick('#demande'); }}>{t.nav.requestQuote}</a>
               </Button>
             </div>
           </div>

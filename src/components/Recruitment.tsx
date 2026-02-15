@@ -25,24 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-
-const benefits = [
-  {
-    icon: Heart,
-    title: "Contrat stable",
-    description: "CDI avec horaires flexibles",
-  },
-  {
-    icon: Users,
-    title: "Équipe soudée",
-    description: "Ambiance familiale et bienveillante",
-  },
-  {
-    icon: Briefcase,
-    title: "Formation",
-    description: "Accompagnement et encadrement",
-  },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const formSchema = z.object({
   nom: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
@@ -89,6 +72,7 @@ export function Recruitment() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -108,6 +92,12 @@ export function Recruitment() {
       message: "",
     },
   });
+
+  const benefits = [
+    { icon: Heart, title: t.recruitment.benefits.stable.title, description: t.recruitment.benefits.stable.description },
+    { icon: Users, title: t.recruitment.benefits.team.title, description: t.recruitment.benefits.team.description },
+    { icon: Briefcase, title: t.recruitment.benefits.training.title, description: t.recruitment.benefits.training.description },
+  ];
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -130,8 +120,8 @@ export function Recruitment() {
       if (error) throw error;
       setIsSubmitted(true);
       toast({
-        title: "Candidature envoyée !",
-        description: "Nous vous contacterons dans les plus brefs délais.",
+        title: t.recruitment.successTitle,
+        description: t.recruitment.successDescription,
       });
     } catch (error) {
       toast({
@@ -153,10 +143,10 @@ export function Recruitment() {
               <CheckCircle className="w-10 h-10 text-primary" />
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Candidature envoyée avec succès !
+              {t.recruitment.successTitle}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Merci pour votre candidature. Notre équipe vous contactera dans les plus brefs délais.
+              {t.recruitment.successDescription}
             </p>
             <Button
               onClick={() => {
@@ -166,7 +156,7 @@ export function Recruitment() {
               }}
               variant="outline"
             >
-              Retour
+              {t.recruitment.back}
             </Button>
           </div>
         </div>
@@ -183,41 +173,36 @@ export function Recruitment() {
               className="relative overflow-hidden rounded-3xl p-8 md:p-12"
               style={{ background: "var(--gradient-hero)" }}
             >
-              {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
 
               <div className="relative z-10">
                 <div className="grid lg:grid-cols-2 gap-8 items-center">
-                  {/* Content */}
                   <ScrollAnimation animation="fade-right" delay={200}>
                     <div className="text-primary-foreground">
                       <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-sm font-medium mb-6">
                         <Briefcase className="w-4 h-4" />
-                        Nous recrutons
+                        {t.recruitment.badge}
                       </span>
 
                       <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                        Rejoignez notre équipe !
+                        {t.recruitment.title}
                       </h2>
 
                       <p className="text-primary-foreground/80 mb-8 max-w-lg">
-                        Nous recherchons des aides-ménagères motivées pour rejoindre notre équipe
-                        dynamique. Bénéficiez d'un encadrement professionnel et d'une ambiance de
-                        travail conviviale.
+                        {t.recruitment.description}
                       </p>
 
                       <Button
                         onClick={() => setShowForm(true)}
                         className="bg-white text-primary hover:bg-white/90 rounded-full px-8 py-6 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
                       >
-                        Postuler maintenant
+                        {t.recruitment.applyNow}
                         <Send className="ml-2 w-5 h-5" />
                       </Button>
                     </div>
                   </ScrollAnimation>
 
-                  {/* Benefits */}
                   <div className="grid sm:grid-cols-3 lg:grid-cols-1 gap-4">
                     {benefits.map((benefit, index) => (
                       <ScrollAnimation key={benefit.title} animation="fade-left" delay={300 + index * 100}>
@@ -247,14 +232,13 @@ export function Recruitment() {
       <div className="container-narrow mx-auto px-4">
         <div className="text-center mb-12">
           <span className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
-            Jobs - Candidature
+            {t.recruitment.formBadge}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Postulez chez Kap-Services
+            {t.recruitment.formTitle}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Actuellement, nous sommes à la recherche d'aides-ménagères. Si un emploi chez nous vous
-            intéresse, remplissez ce formulaire.
+            {t.recruitment.formDescription}
           </p>
         </div>
 
@@ -265,124 +249,69 @@ export function Recruitment() {
               <div className="glass-card rounded-2xl p-6 md:p-8">
                 <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
                   <Users className="w-5 h-5 text-primary" />
-                  Vos coordonnées
+                  {t.recruitment.coordinates}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Tous les champs sont obligatoires.
+                  {t.recruitment.allFieldsRequired}
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="nom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nom</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Votre nom" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="prenom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Prénom</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Votre prénom" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="rue"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Rue</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nom de la rue" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="numero"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Numéro</FormLabel>
-                        <FormControl>
-                          <Input placeholder="N°" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="codePostal"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Code postal</FormLabel>
-                        <FormControl>
-                          <Input placeholder="6000" maxLength={4} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="localite"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Localité</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Votre ville" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="telephone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Téléphone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="0471 23 45 67" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="votre@email.be" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="nom" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.lastName}</FormLabel>
+                      <FormControl><Input placeholder={t.contact.lastNamePlaceholder} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="prenom" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.firstName}</FormLabel>
+                      <FormControl><Input placeholder={t.contact.firstNamePlaceholder} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="rue" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.street}</FormLabel>
+                      <FormControl><Input placeholder={t.common.street} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="numero" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.number}</FormLabel>
+                      <FormControl><Input placeholder="N°" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="codePostal" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.postalCode}</FormLabel>
+                      <FormControl><Input placeholder="6000" maxLength={4} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="localite" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.city}</FormLabel>
+                      <FormControl><Input placeholder={t.common.city} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="telephone" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.phone}</FormLabel>
+                      <FormControl><Input placeholder={t.contact.phonePlaceholder} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="email" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.email}</FormLabel>
+                      <FormControl><Input type="email" placeholder={t.contact.emailPlaceholder} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                 </div>
               </div>
 
@@ -390,155 +319,106 @@ export function Recruitment() {
               <div className="glass-card rounded-2xl p-6 md:p-8">
                 <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
                   <Briefcase className="w-5 h-5 text-primary" />
-                  Concernant votre candidature
+                  {t.recruitment.aboutApplication}
                 </h3>
 
                 <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="emploi"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Vous souhaitez travailler à :</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choisissez..." />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {emploiOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="clientele"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Avez-vous déjà une clientèle ?</FormLabel>
+                  <FormField control={form.control} name="emploi" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.recruitment.workType}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex gap-6"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="oui" id="clientele-oui" />
-                              <label htmlFor="clientele-oui" className="text-sm cursor-pointer">
-                                Oui
-                              </label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="non" id="clientele-non" />
-                              <label htmlFor="clientele-non" className="text-sm cursor-pointer">
-                                Non
-                              </label>
-                            </div>
-                          </RadioGroup>
+                          <SelectTrigger><SelectValue placeholder={t.recruitment.choose} /></SelectTrigger>
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                        <SelectContent>
+                          {emploiOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                  <FormField
-                    control={form.control}
-                    name="transport"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Disposez-vous d'un moyen de transport ?</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choisissez..." />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {transportOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="clientele" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.recruitment.hasClients}</FormLabel>
+                      <FormControl>
+                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-6">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="oui" id="clientele-oui" />
+                            <label htmlFor="clientele-oui" className="text-sm cursor-pointer">{t.recruitment.yes}</label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="non" id="clientele-non" />
+                            <label htmlFor="clientele-non" className="text-sm cursor-pointer">{t.recruitment.no}</label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                  <FormField
-                    control={form.control}
-                    name="planImpulsion"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bénéficiez-vous du plan Impulsion ?</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choisissez..." />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {planImpulsionOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="transport" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.recruitment.transportLabel}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder={t.recruitment.choose} /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {transportOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="planImpulsion" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.recruitment.planImpulsion}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder={t.recruitment.choose} /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {planImpulsionOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                 </div>
               </div>
 
               {/* Message */}
               <div className="glass-card rounded-2xl p-6 md:p-8">
-                <h3 className="text-xl font-semibold text-foreground mb-6">Message (facultatif)</h3>
+                <h3 className="text-xl font-semibold text-foreground mb-6">{t.recruitment.messageOptional}</h3>
 
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Votre message</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Si vous avez des informations supplémentaires à nous communiquer..."
-                          className="min-h-[120px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="message" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t.contact.yourMessage}</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder={t.recruitment.messagePlaceholder} className="min-h-[120px]" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowForm(false)}
-                  className="px-8"
-                >
-                  Annuler
+                <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="px-8">
+                  {t.recruitment.back}
                 </Button>
                 <Button type="submit" size="lg" className="btn-accent border-0 px-12" disabled={isSubmitting}>
                   {isSubmitting ? (
-                    <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Envoi en cours...</>
+                    <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{t.recruitment.submitting}</>
                   ) : (
-                    <><Send className="w-5 h-5 mr-2" />Envoyer ma candidature</>
+                    <><Send className="w-5 h-5 mr-2" />{t.recruitment.submit}</>
                   )}
                 </Button>
               </div>

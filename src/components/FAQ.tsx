@@ -9,7 +9,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 const faqData = {
   fr: [
     {
-      categoryKey: 'titresServices',
+      categoryKey: 'titresServices' as const,
       icon: Ticket,
       items: [
         { question: "Qu'est-ce qu'un titre-service ?", answer: "Le titre-service est un moyen de paiement subventionné par la Région qui vous permet de bénéficier d'une aide-ménagère agréée à un tarif avantageux. Chaque titre correspond à une heure de prestation. Vous pouvez les commander en format papier ou électronique via Pluxee (anciennement Sodexo)." },
@@ -19,7 +19,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'servicesOffered',
+      categoryKey: 'servicesOffered' as const,
       icon: Sparkles,
       items: [
         { question: "Quels services sont couverts par les titres-services ?", answer: "Les titres-services couvrent le ménage à domicile (aspirateur, nettoyage, vaisselle, rangement...), le repassage en atelier ou à domicile, les courses ménagères et la préparation de repas. Le transport de personnes à mobilité réduite est également couvert." },
@@ -29,7 +29,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'billing',
+      categoryKey: 'billing' as const,
       icon: Receipt,
       items: [
         { question: "Comment fonctionne la facturation avec les titres-services ?", answer: "Chaque heure de prestation correspond à un titre-service. Vous recevez une facture mensuelle récapitulant les prestations effectuées. Le montant à payer est la différence entre le coût total et la valeur des titres-services que vous avez fournis." },
@@ -39,7 +39,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'replacement',
+      categoryKey: 'replacement' as const,
       icon: UserCheck,
       items: [
         { question: "Que se passe-t-il si mon aide-ménagère est malade ?", answer: "En cas de maladie de votre aide-ménagère, nous vous proposons systématiquement un remplacement. Notre équipe d'encadrantes organise la substitution le plus rapidement possible pour que votre prestation soit maintenue." },
@@ -51,7 +51,7 @@ const faqData = {
   ],
   nl: [
     {
-      categoryKey: 'titresServices',
+      categoryKey: 'titresServices' as const,
       icon: Ticket,
       items: [
         { question: "Wat is een dienstencheque?", answer: "De dienstencheque is een door het Gewest gesubsidieerd betaalmiddel waarmee u kunt profiteren van een erkende huishoudhulp tegen een voordelig tarief. Elke cheque komt overeen met één uur dienstverlening. U kunt ze bestellen in papieren of elektronisch formaat via Pluxee (voorheen Sodexo)." },
@@ -61,7 +61,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'servicesOffered',
+      categoryKey: 'servicesOffered' as const,
       icon: Sparkles,
       items: [
         { question: "Welke diensten worden gedekt door dienstencheques?", answer: "Dienstencheques dekken huishoudelijk werk aan huis (stofzuigen, schoonmaken, afwassen, opruimen...), strijken in het atelier of aan huis, boodschappen en maaltijdbereiding. Vervoer van personen met beperkte mobiliteit is ook gedekt." },
@@ -71,7 +71,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'billing',
+      categoryKey: 'billing' as const,
       icon: Receipt,
       items: [
         { question: "Hoe werkt de facturering met dienstencheques?", answer: "Elk uur prestatie komt overeen met een dienstencheque. U ontvangt een maandelijkse factuur met een overzicht van de uitgevoerde prestaties. Het te betalen bedrag is het verschil tussen de totale kost en de waarde van de door u verstrekte dienstencheques." },
@@ -81,7 +81,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'replacement',
+      categoryKey: 'replacement' as const,
       icon: UserCheck,
       items: [
         { question: "Wat gebeurt er als mijn huishoudhulp ziek is?", answer: "Bij ziekte van uw huishoudhulp bieden wij u systematisch een vervanging aan. Ons team van begeleidsters organiseert de vervanging zo snel mogelijk zodat uw prestatie gehandhaafd blijft." },
@@ -93,7 +93,7 @@ const faqData = {
   ],
   en: [
     {
-      categoryKey: 'titresServices',
+      categoryKey: 'titresServices' as const,
       icon: Ticket,
       items: [
         { question: "What is a service voucher?", answer: "A service voucher is a subsidised payment method by the Region that allows you to benefit from an approved housekeeper at an advantageous rate. Each voucher corresponds to one hour of service. You can order them in paper or electronic format via Pluxee (formerly Sodexo)." },
@@ -103,7 +103,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'servicesOffered',
+      categoryKey: 'servicesOffered' as const,
       icon: Sparkles,
       items: [
         { question: "What services are covered by service vouchers?", answer: "Service vouchers cover home cleaning (vacuuming, cleaning, dishes, tidying...), workshop or home ironing, grocery shopping and meal preparation. Transport for persons with reduced mobility is also covered." },
@@ -113,7 +113,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'billing',
+      categoryKey: 'billing' as const,
       icon: Receipt,
       items: [
         { question: "How does billing work with service vouchers?", answer: "Each hour of service corresponds to one service voucher. You receive a monthly invoice summarising the services performed. The amount payable is the difference between the total cost and the value of the service vouchers you have provided." },
@@ -123,7 +123,7 @@ const faqData = {
       ],
     },
     {
-      categoryKey: 'replacement',
+      categoryKey: 'replacement' as const,
       icon: UserCheck,
       items: [
         { question: "What happens if my housekeeper is ill?", answer: "In case of illness of your housekeeper, we systematically offer you a replacement. Our team of supervisors organises the substitution as quickly as possible to maintain your service." },
@@ -143,9 +143,9 @@ export function FAQ() {
     <section id="faq" className="section-padding bg-secondary/30">
       <div className="container-narrow mx-auto">
         <ScrollAnimation animation="fade-up" className="text-center max-w-2xl mx-auto mb-16">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">{t('faq.badge')}</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('faq.title')}</h2>
-          <p className="text-muted-foreground">{t('faq.description')}</p>
+          <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">{t.faq.badge}</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t.faq.title}</h2>
+          <p className="text-muted-foreground">{t.faq.description}</p>
         </ScrollAnimation>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -156,7 +156,7 @@ export function FAQ() {
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     <category.icon className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground font-sans">{t(`faq.categories.${category.categoryKey}`)}</h3>
+                  <h3 className="text-lg font-semibold text-foreground font-sans">{t.faq.categories[category.categoryKey]}</h3>
                 </div>
                 <Accordion type="single" collapsible className="space-y-2">
                   {category.items.map((item, index) => (
