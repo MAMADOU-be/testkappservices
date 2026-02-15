@@ -374,4 +374,11 @@ export const nl = {
     pillowcase: "Kussensloop",
     napkin: "Servet",
   },
+
+  blog: {
+    badge: "Nieuws",
+    title: "Ons laatste nieuws",
+    description: "Huishoudtips, bedrijfsnieuws en trucs voor een vlekkeloos interieur.",
+    readMore: "Lees meer",
+  },
 };
