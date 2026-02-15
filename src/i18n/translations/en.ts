@@ -374,4 +374,11 @@ export const en = {
     pillowcase: "Pillowcase",
     napkin: "Table napkin",
   },
+
+  blog: {
+    badge: "News",
+    title: "Our latest news",
+    description: "Housekeeping tips, company news and tricks for a spotless home.",
+    readMore: "Read more",
+  },
 };

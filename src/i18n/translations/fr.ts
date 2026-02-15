@@ -388,4 +388,12 @@ export const fr = {
     pillowcase: "Taie d'oreiller",
     napkin: "Serviette de table",
   },
+
+  // Blog
+  blog: {
+    badge: "Actualités",
+    title: "Nos dernières actualités",
+    description: "Conseils ménagers, nouvelles de l'entreprise et astuces pour un intérieur impeccable.",
+    readMore: "Lire la suite",
+  },
 };
