@@ -6,17 +6,17 @@ export function About() {
   const { t } = useLanguage();
 
   const timeline = [
-    { year: "2008", title: t('about.timeline.t2008.title'), description: t('about.timeline.t2008.description') },
-    { year: "2012", title: t('about.timeline.t2012.title'), description: t('about.timeline.t2012.description') },
-    { year: "2020", title: t('about.timeline.t2020.title'), description: t('about.timeline.t2020.description') },
-    { year: t('about.timeline.today.year'), title: t('about.timeline.today.title'), description: t('about.timeline.today.description') },
+    { year: "2008", title: t.about.timeline.t2008.title, description: t.about.timeline.t2008.description },
+    { year: "2012", title: t.about.timeline.t2012.title, description: t.about.timeline.t2012.description },
+    { year: "2020", title: t.about.timeline.t2020.title, description: t.about.timeline.t2020.description },
+    { year: t.about.timeline.today.year, title: t.about.timeline.today.title, description: t.about.timeline.today.description },
   ];
 
   const values = [
-    { icon: Users, title: t('about.values.team.title'), description: t('about.values.team.description') },
-    { icon: Award, title: t('about.values.training.title'), description: t('about.values.training.description') },
-    { icon: Heart, title: t('about.values.personalized.title'), description: t('about.values.personalized.description') },
-    { icon: Building2, title: t('about.values.local.title'), description: t('about.values.local.description') },
+    { icon: Users, title: t.about.values.team.title, description: t.about.values.team.description },
+    { icon: Award, title: t.about.values.training.title, description: t.about.values.training.description },
+    { icon: Heart, title: t.about.values.personalized.title, description: t.about.values.personalized.description },
+    { icon: Building2, title: t.about.values.local.title, description: t.about.values.local.description },
   ];
 
   const [valuesRef, valuesVisible, getStaggeredStyle] = useStaggeredAnimation<HTMLDivElement>(values.length, 100);
@@ -26,13 +26,13 @@ export function About() {
       <div className="container-narrow mx-auto">
         <ScrollAnimation animation="fade-up" className="text-center mb-16">
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            {t('about.badge')}
+            {t.about.badge}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            {t('about.title')}
+            {t.about.title}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            {t('about.description')}
+            {t.about.description}
           </p>
         </ScrollAnimation>
 
@@ -70,8 +70,8 @@ export function About() {
 
         <ScrollAnimation animation="fade-up" delay={400} className="mt-16 text-center">
           <p className="text-muted-foreground">
-            <span className="font-medium text-foreground">{t('about.coverage')}</span>{" "}
-            {t('about.coverageList')}
+            <span className="font-medium text-foreground">{t.about.coverage}</span>{" "}
+            {t.about.coverageList}
           </p>
         </ScrollAnimation>
       </div>

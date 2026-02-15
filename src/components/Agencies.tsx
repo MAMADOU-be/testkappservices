@@ -12,13 +12,13 @@ const agenciesData = [
     phone: "071 45 57 45",
     mapsQuery: "Rue+Winston+Churchill+212A,+6180+Courcelles,+Belgium",
     hours: [
-      { dayKey: "monday", time: "07h30 - 18h" },
-      { dayKey: "tuesday", time: "07h30 - 18h" },
-      { dayKey: "wednesday", time: "07h30 - 18h" },
-      { dayKey: "thursday", time: "07h30 - 18h" },
-      { dayKey: "friday", time: "07h30 - 17h" },
-      { dayKey: "saturday", time: "08h - 12h15" },
-      { dayKey: "sunday", time: null, closed: true },
+      { dayKey: "monday" as const, time: "07h30 - 18h" },
+      { dayKey: "tuesday" as const, time: "07h30 - 18h" },
+      { dayKey: "wednesday" as const, time: "07h30 - 18h" },
+      { dayKey: "thursday" as const, time: "07h30 - 18h" },
+      { dayKey: "friday" as const, time: "07h30 - 17h" },
+      { dayKey: "saturday" as const, time: "08h - 12h15" },
+      { dayKey: "sunday" as const, time: null, closed: true },
     ]
   },
   {
@@ -28,13 +28,13 @@ const agenciesData = [
     phone: "071 45 57 45",
     mapsQuery: "Place+Communale+8,+6540+Lobbes,+Belgium",
     hours: [
-      { dayKey: "monday", time: "07h30 - 18h" },
-      { dayKey: "tuesday", time: "07h30 - 18h" },
-      { dayKey: "wednesday", time: "07h30 - 18h" },
-      { dayKey: "thursday", time: "07h30 - 18h" },
-      { dayKey: "friday", time: "07h30 - 17h" },
-      { dayKey: "saturday", time: "08h - 12h15" },
-      { dayKey: "sunday", time: null, closed: true },
+      { dayKey: "monday" as const, time: "07h30 - 18h" },
+      { dayKey: "tuesday" as const, time: "07h30 - 18h" },
+      { dayKey: "wednesday" as const, time: "07h30 - 18h" },
+      { dayKey: "thursday" as const, time: "07h30 - 18h" },
+      { dayKey: "friday" as const, time: "07h30 - 17h" },
+      { dayKey: "saturday" as const, time: "08h - 12h15" },
+      { dayKey: "sunday" as const, time: null, closed: true },
     ]
   },
   {
@@ -45,13 +45,13 @@ const agenciesData = [
     phone: "071 45 57 45",
     mapsQuery: "Avenue+Paul+Pastur+179,+6032+Mont-sur-Marchienne,+Belgium",
     hours: [
-      { dayKey: "monday", time: "08h30 - 12h45 / 13h45 - 18h" },
-      { dayKey: "tuesday", time: "08h30 - 12h45 / 13h45 - 18h" },
-      { dayKey: "wednesday", time: "08h30 - 12h45 / 13h45 - 18h" },
-      { dayKey: "thursday", time: "08h30 - 12h45 / 13h45 - 18h" },
-      { dayKey: "friday", time: "08h30 - 17h" },
-      { dayKey: "saturday", time: "08h30 - 12h45" },
-      { dayKey: "sunday", time: null, closed: true },
+      { dayKey: "monday" as const, time: "08h30 - 12h45 / 13h45 - 18h" },
+      { dayKey: "tuesday" as const, time: "08h30 - 12h45 / 13h45 - 18h" },
+      { dayKey: "wednesday" as const, time: "08h30 - 12h45 / 13h45 - 18h" },
+      { dayKey: "thursday" as const, time: "08h30 - 12h45 / 13h45 - 18h" },
+      { dayKey: "friday" as const, time: "08h30 - 17h" },
+      { dayKey: "saturday" as const, time: "08h30 - 12h45" },
+      { dayKey: "sunday" as const, time: null, closed: true },
     ]
   }
 ];
@@ -64,9 +64,9 @@ export function Agencies() {
     <section id="agences" className="section-padding bg-secondary/50">
       <div className="container-narrow mx-auto">
         <ScrollAnimation animation="fade-up" className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-primary font-medium text-sm uppercase tracking-wider">{t('agencies.badge')}</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-4 mb-6">{t('agencies.title')}</h2>
-          <p className="text-muted-foreground">{t('agencies.description')}</p>
+          <span className="text-primary font-medium text-sm uppercase tracking-wider">{t.agencies.badge}</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-4 mb-6">{t.agencies.title}</h2>
+          <p className="text-muted-foreground">{t.agencies.description}</p>
         </ScrollAnimation>
 
         <div ref={agenciesRef} className="grid lg:grid-cols-3 gap-8">
@@ -97,23 +97,23 @@ export function Agencies() {
                 </div>
                 <Button variant="outline" size="sm" className="w-full gap-2" asChild>
                   <a href={`https://www.google.com/maps/search/?api=1&query=${agency.mapsQuery}`} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-4 h-4" />{t('agencies.viewOnMaps')}
+                    <ExternalLink className="w-4 h-4" />{t.agencies.viewOnMaps}
                   </a>
                 </Button>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-primary">
                     <Clock className="w-4 h-4" />
-                    <span className="font-medium text-sm uppercase tracking-wider">{t('agencies.schedule')}</span>
+                    <span className="font-medium text-sm uppercase tracking-wider">{t.agencies.schedule}</span>
                   </div>
                   <Table>
                     <TableBody>
                       {agency.hours.map((schedule) => (
                         <TableRow key={schedule.dayKey} className="border-border/30">
                           <TableCell className="py-2 px-0 font-medium text-foreground">
-                            {t(`agencies.days.${schedule.dayKey}`)}
+                            {t.agencies.days[schedule.dayKey]}
                           </TableCell>
                           <TableCell className={`py-2 px-0 text-right ${schedule.closed ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-                            {schedule.closed ? t('agencies.closed') : schedule.time}
+                            {schedule.closed ? t.agencies.closed : schedule.time}
                           </TableCell>
                         </TableRow>
                       ))}

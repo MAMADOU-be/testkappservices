@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, ArrowLeft, User, Gift, Eye, EyeOff, Check, X } from 'lucide-react';
 import { z } from 'zod';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const emailSchema = z.string().email('Email invalide');
 const passwordSchema = z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères');
@@ -37,12 +38,6 @@ function getPasswordStrength(password: string) {
   return { score, checks };
 }
 
-function getStrengthLabel(score: number) {
-  if (score <= 2) return { label: 'Faible', color: 'bg-destructive' };
-  if (score <= 4) return { label: 'Moyen', color: 'bg-yellow-500' };
-  return { label: 'Fort', color: 'bg-green-500' };
-}
-
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,12 +51,20 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const redirectTo = searchParams.get('redirect') || '/';
   const referralCode = searchParams.get('ref');
 
   const strength = useMemo(() => getPasswordStrength(password), [password]);
-  const strengthInfo = useMemo(() => getStrengthLabel(strength.score), [strength.score]);
+
+  const getStrengthLabel = (score: number) => {
+    if (score <= 2) return { label: t.auth.weak, color: 'bg-destructive' };
+    if (score <= 4) return { label: t.auth.medium, color: 'bg-yellow-500' };
+    return { label: t.auth.strong, color: 'bg-green-500' };
+  };
+
+  const strengthInfo = useMemo(() => getStrengthLabel(strength.score), [strength.score, t]);
 
   useEffect(() => {
     if (!authLoading && !profileLoading && user) {
@@ -103,13 +106,13 @@ const Auth = () => {
     if (error) {
       toast({
         variant: 'destructive',
-        title: 'Erreur de connexion',
+        title: t.auth.errorLogin,
         description: error.message === 'Invalid login credentials' 
-          ? 'Email ou mot de passe incorrect'
+          ? t.auth.invalidCredentials
           : error.message,
       });
     } else {
-      toast({ title: 'Connexion réussie', description: 'Bienvenue !' });
+      toast({ title: t.auth.loginSuccess, description: t.auth.welcome });
     }
   };
 
@@ -124,9 +127,9 @@ const Auth = () => {
       setIsSubmitting(false);
       let message = error.message;
       if (error.message.includes('already registered')) {
-        message = 'Un compte existe déjà avec cet email';
+        message = t.auth.alreadyRegistered;
       }
-      toast({ variant: 'destructive', title: 'Erreur d\'inscription', description: message });
+      toast({ variant: 'destructive', title: t.auth.errorRegister, description: message });
     } else {
       if (referralCode && data?.user) {
         try {
@@ -140,10 +143,10 @@ const Auth = () => {
       }
       setIsSubmitting(false);
       toast({
-        title: 'Inscription réussie',
+        title: t.auth.registerSuccess,
         description: referralCode 
-          ? 'Votre compte a été créé avec succès via parrainage !' 
-          : 'Votre compte a été créé avec succès',
+          ? t.auth.registerSuccessReferral
+          : t.auth.registerSuccessNormal,
       });
     }
   };
@@ -163,7 +166,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <Button variant="ghost" className="mb-4" onClick={() => navigate('/')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour au site
+          {t.auth.backToSite}
         </Button>
         
         <Card className="shadow-lg">
@@ -171,26 +174,26 @@ const Auth = () => {
             <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-primary font-bold text-xl">K</span>
             </div>
-            <CardTitle className="text-2xl">Connexion</CardTitle>
-            <CardDescription>Connectez-vous ou créez un compte</CardDescription>
+            <CardTitle className="text-2xl">{t.auth.connectionTitle}</CardTitle>
+            <CardDescription>{t.auth.connectionSubtitle}</CardDescription>
             {referralCode && (
               <Badge variant="secondary" className="mt-2 gap-1">
                 <Gift className="h-3 w-3" />
-                Code parrain : {referralCode}
+                {t.auth.referralCode} : {referralCode}
               </Badge>
             )}
           </CardHeader>
           <CardContent>
             <Tabs defaultValue={referralCode ? "register" : "login"} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Connexion</TabsTrigger>
-                <TabsTrigger value="register">Inscription</TabsTrigger>
+                <TabsTrigger value="login">{t.auth.loginTab}</TabsTrigger>
+                <TabsTrigger value="register">{t.auth.registerTab}</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
                 <form onSubmit={handleSignIn} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label htmlFor="login-email">{t.auth.email}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input id="login-email" type="email" placeholder="votre@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" />
@@ -199,7 +202,7 @@ const Auth = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Mot de passe</Label>
+                    <Label htmlFor="login-password">{t.auth.password}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input id="login-password" type={passwordInputType} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10" />
@@ -211,7 +214,7 @@ const Auth = () => {
                   </div>
                   
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Connexion...</>) : 'Se connecter'}
+                    {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.auth.loggingIn}</>) : t.auth.loginButton}
                   </Button>
                 </form>
               </TabsContent>
@@ -219,7 +222,7 @@ const Auth = () => {
               <TabsContent value="register">
                 <form onSubmit={handleSignUp} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-name">Nom complet</Label>
+                    <Label htmlFor="register-name">{t.auth.fullName}</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input id="register-name" type="text" placeholder="Jean Dupont" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="pl-10" />
@@ -228,7 +231,7 @@ const Auth = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
+                    <Label htmlFor="register-email">{t.auth.email}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input id="register-email" type="email" placeholder="votre@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" />
@@ -237,7 +240,7 @@ const Auth = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="register-password">Mot de passe</Label>
+                    <Label htmlFor="register-password">{t.auth.password}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input id="register-password" type={passwordInputType} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10" />
@@ -250,25 +253,25 @@ const Auth = () => {
                   {password && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Force du mot de passe</span>
+                        <span className="text-xs text-muted-foreground">{t.auth.passwordStrength}</span>
                         <span className={`text-xs font-medium ${strength.score <= 2 ? 'text-destructive' : strength.score <= 4 ? 'text-yellow-600' : 'text-green-600'}`}>
                           {strengthInfo.label}
                         </span>
                       </div>
                       <Progress value={(strength.score / 6) * 100} className="h-1.5" />
                       <div className="grid grid-cols-2 gap-1 text-xs">
-                        <PasswordCheck ok={strength.checks.minLength} label="6 caractères min." />
-                        <PasswordCheck ok={strength.checks.hasUppercase} label="Majuscule" />
-                        <PasswordCheck ok={strength.checks.hasLowercase} label="Minuscule" />
-                        <PasswordCheck ok={strength.checks.hasNumber} label="Chiffre" />
-                        <PasswordCheck ok={strength.checks.hasSpecial} label="Caractère spécial" />
-                        <PasswordCheck ok={strength.checks.isLong} label="10+ caractères" />
+                        <PasswordCheck ok={strength.checks.minLength} label={t.auth.minChars} />
+                        <PasswordCheck ok={strength.checks.hasUppercase} label={t.auth.uppercase} />
+                        <PasswordCheck ok={strength.checks.hasLowercase} label={t.auth.lowercase} />
+                        <PasswordCheck ok={strength.checks.hasNumber} label={t.auth.digit} />
+                        <PasswordCheck ok={strength.checks.hasSpecial} label={t.auth.specialChar} />
+                        <PasswordCheck ok={strength.checks.isLong} label={t.auth.longPassword} />
                       </div>
                     </div>
                   )}
                   
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Inscription...</>) : 'S\'inscrire'}
+                    {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.auth.registering}</>) : t.auth.registerButton}
                   </Button>
                 </form>
               </TabsContent>

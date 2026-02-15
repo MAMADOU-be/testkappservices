@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const formSchema = z.object({
   nom: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
@@ -44,14 +45,6 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const joursOptions = [
-  { id: "lundi", label: "Lundi" },
-  { id: "mardi", label: "Mardi" },
-  { id: "mercredi", label: "Mercredi" },
-  { id: "jeudi", label: "Jeudi" },
-  { id: "vendredi", label: "Vendredi" },
-];
-
 const heuresOptions = [
   { value: "3", label: "3 heures" },
   { value: "4", label: "4 heures" },
@@ -66,10 +59,18 @@ const heuresOptions = [
   { value: "+12", label: "Plus de 12 heures" },
 ];
 
+const dayKeys = ["monday", "tuesday", "wednesday", "thursday", "friday"] as const;
+
 export function RequestForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
+
+  const joursOptions = dayKeys.map(key => ({
+    id: key,
+    label: t.requestForm.days[key],
+  }));
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -94,7 +95,6 @@ export function RequestForm() {
   const [honeypot, setHoneypot] = useState("");
 
   const onSubmit = async (data: FormData) => {
-    // Honeypot anti-spam check
     if (honeypot) {
       setIsSubmitted(true);
       return;
@@ -115,7 +115,7 @@ export function RequestForm() {
           frequency: `${data.heuresParSemaine}h/semaine`,
           preferred_day: data.joursPreference.join(', '),
           comments: data.message || null,
-          website: honeypot, // honeypot field for server-side check
+          website: honeypot,
         },
       });
 
@@ -123,13 +123,12 @@ export function RequestForm() {
       if (result?.error) throw new Error(result.error);
 
       setIsSubmitted(true);
-      // Scroll to success message
       setTimeout(() => {
         document.getElementById('demande')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
       toast({
-        title: "Demande envoyée !",
-        description: "Nous vous contacterons dans les 24 heures ouvrables.",
+        title: t.requestForm.successTitle,
+        description: t.requestForm.successDescription,
       });
     } catch (error) {
       const message = error instanceof Error && error.message.includes('Trop de demandes')
@@ -154,19 +153,19 @@ export function RequestForm() {
               <CheckCircle className="w-12 h-12 text-primary" />
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              🎉 Demande envoyée avec succès !
+              {t.requestForm.successTitle}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Merci pour votre demande. Notre équipe vous contactera dans les 24 heures ouvrables.
+              {t.requestForm.successDescription}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button onClick={() => { setIsSubmitted(false); form.reset(); }} className="btn-accent border-0">
                 <Send className="w-4 h-4 mr-2" />
-                Faire une nouvelle demande
+                {t.requestForm.newRequest}
               </Button>
               <Button variant="outline" asChild>
                 <a href="#ironing-registration">
-                  Lire et signer un contrat repassage
+                  {t.requestForm.signContract}
                 </a>
               </Button>
             </div>
@@ -181,15 +180,15 @@ export function RequestForm() {
       <div className="container-narrow mx-auto px-4">
         <div className="text-center mb-12">
           <span className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
-            Demande d'aide-ménagère
+            {t.requestForm.badge}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Trouvez votre aide-ménagère
+            {t.requestForm.title}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Remplissez ce formulaire et nous vous contacterons dans les 24 heures ouvrables.
+            {t.requestForm.description}
             <br />
-            Vous pouvez également nous téléphoner au{" "}
+            {t.requestForm.callUs}{" "}
             <a href="tel:+3271455745" className="text-primary font-semibold hover:underline">
               071 45 57 45
             </a>
@@ -203,268 +202,173 @@ export function RequestForm() {
               <div className="glass-card rounded-2xl p-6 md:p-8">
                 <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
                   <Phone className="w-5 h-5 text-primary" />
-                  Vos coordonnées
+                  {t.requestForm.coordinates}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Tous les champs sont obligatoires.
+                  {t.requestForm.allFieldsRequired}
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="nom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nom</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Votre nom" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="prenom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Prénom</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Votre prénom" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="rue"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Rue</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nom de la rue" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="numero"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Numéro</FormLabel>
-                        <FormControl>
-                          <Input placeholder="N°" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="codePostal"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Code postal</FormLabel>
-                        <FormControl>
-                          <Input placeholder="6000" maxLength={4} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="localite"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Localité</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Votre ville" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="telephone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Téléphone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="0471 23 45 67" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="votre@email.be" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="nom" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.lastName}</FormLabel>
+                      <FormControl><Input placeholder={t.contact.lastNamePlaceholder} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="prenom" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.firstName}</FormLabel>
+                      <FormControl><Input placeholder={t.contact.firstNamePlaceholder} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="rue" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.street}</FormLabel>
+                      <FormControl><Input placeholder={t.common.street} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="numero" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.number}</FormLabel>
+                      <FormControl><Input placeholder="N°" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="codePostal" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.postalCode}</FormLabel>
+                      <FormControl><Input placeholder="6000" maxLength={4} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="localite" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.city}</FormLabel>
+                      <FormControl><Input placeholder={t.common.city} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="telephone" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.phone}</FormLabel>
+                      <FormControl><Input placeholder={t.contact.phonePlaceholder} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="email" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.common.email}</FormLabel>
+                      <FormControl><Input type="email" placeholder={t.contact.emailPlaceholder} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                 </div>
               </div>
 
               {/* Concernant votre demande */}
               <div className="glass-card rounded-2xl p-6 md:p-8">
                 <h3 className="text-xl font-semibold text-foreground mb-6">
-                  Concernant votre demande
+                  {t.requestForm.aboutRequest}
                 </h3>
 
                 <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="inscritPluxee"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Êtes-vous inscrit chez Pluxee ?</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex gap-6"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="oui" id="pluxee-oui" />
-                              <label htmlFor="pluxee-oui" className="text-sm cursor-pointer">
-                                Oui
-                              </label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="non" id="pluxee-non" />
-                              <label htmlFor="pluxee-non" className="text-sm cursor-pointer">
-                                Non
-                              </label>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="inscritPluxee" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.requestForm.registeredPluxee}</FormLabel>
+                      <FormControl>
+                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-6">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="oui" id="pluxee-oui" />
+                            <label htmlFor="pluxee-oui" className="text-sm cursor-pointer">{t.requestForm.yes}</label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="non" id="pluxee-non" />
+                            <label htmlFor="pluxee-non" className="text-sm cursor-pointer">{t.requestForm.no}</label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
                   {inscritPluxee === "oui" && (
-                    <FormField
-                      control={form.control}
-                      name="numeroPluxee"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Numéro d'identification Pluxee</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Votre numéro Pluxee" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <FormField control={form.control} name="numeroPluxee" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t.requestForm.pluxeeNumber}</FormLabel>
+                        <FormControl><Input placeholder={t.requestForm.pluxeePlaceholder} {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                   )}
 
-                  <FormField
-                    control={form.control}
-                    name="heuresParSemaine"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre d'heures souhaitées par semaine</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choisissez..." />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {heuresOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="joursPreference"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>Jour(s) de préférence</FormLabel>
-                        <div className="flex flex-wrap gap-4 mt-2">
-                          {joursOptions.map((jour) => (
-                            <FormField
-                              key={jour.id}
-                              control={form.control}
-                              name="joursPreference"
-                              render={({ field }) => (
-                                <FormItem className="flex items-center space-x-2">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(jour.id)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, jour.id])
-                                          : field.onChange(
-                                              field.value?.filter((value) => value !== jour.id)
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <label className="text-sm cursor-pointer">{jour.label}</label>
-                                </FormItem>
-                              )}
-                            />
+                  <FormField control={form.control} name="heuresParSemaine" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t.requestForm.hoursPerWeek}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder={t.requestForm.choose} /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {heuresOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                           ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="joursPreference" render={() => (
+                    <FormItem>
+                      <FormLabel>{t.requestForm.preferredDays}</FormLabel>
+                      <div className="flex flex-wrap gap-4 mt-2">
+                        {joursOptions.map((jour) => (
+                          <FormField
+                            key={jour.id}
+                            control={form.control}
+                            name="joursPreference"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(jour.id)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...field.value, jour.id])
+                                        : field.onChange(field.value?.filter((value) => value !== jour.id));
+                                    }}
+                                  />
+                                </FormControl>
+                                <label className="text-sm cursor-pointer">{jour.label}</label>
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                 </div>
               </div>
 
               {/* Message */}
               <div className="glass-card rounded-2xl p-6 md:p-8">
                 <h3 className="text-xl font-semibold text-foreground mb-6">
-                  Message (facultatif)
+                  {t.requestForm.messageOptional}
                 </h3>
 
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Votre message</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Si vous avez des informations supplémentaires à nous communiquer..."
-                          className="min-h-[120px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="message" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t.contact.yourMessage}</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder={t.requestForm.messagePlaceholder} className="min-h-[120px]" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
 
               {/* Honeypot anti-spam field */}
@@ -489,15 +393,9 @@ export function RequestForm() {
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Envoi en cours...
-                    </>
+                    <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{t.requestForm.submitting}</>
                   ) : (
-                    <>
-                      <Send className="w-5 h-5 mr-2" />
-                      Envoyer ma demande
-                    </>
+                    <><Send className="w-5 h-5 mr-2" />{t.requestForm.submit}</>
                   )}
                 </Button>
               </div>
