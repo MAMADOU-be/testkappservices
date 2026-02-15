@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, LogIn, LogOut, UserCircle } from "lucide-react";
+import { LogIn, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveSection } from "@/hooks/useActiveSection";
@@ -122,11 +122,15 @@ export function Header() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 relative z-50"
+              className="lg:hidden p-2 relative z-50 w-10 h-10 flex items-center justify-center"
               onClick={() => setIsOpen(!isOpen)}
               aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <div className="w-6 h-5 relative flex flex-col justify-between">
+                <span className={`block h-0.5 w-6 bg-foreground rounded-full transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] origin-center ${isOpen ? 'rotate-45 translate-y-[9px]' : ''}`} />
+                <span className={`block h-0.5 w-6 bg-foreground rounded-full transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${isOpen ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'}`} />
+                <span className={`block h-0.5 w-6 bg-foreground rounded-full transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] origin-center ${isOpen ? '-rotate-45 -translate-y-[9px]' : ''}`} />
+              </div>
             </button>
           </div>
         </div>
