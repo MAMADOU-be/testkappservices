@@ -116,6 +116,33 @@ export function useAdminNotifications() {
           loadUnreadCount();
         }
       )
+      // Listen for profile updates
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        (payload) => {
+          const profile = payload.new as { display_name: string | null };
+          playNotificationSound();
+          toast({
+            title: '👤 Profil modifié',
+            description: `${profile.display_name || 'Utilisateur'} a mis à jour son profil`,
+          });
+          loadUnreadCount();
+        }
+      )
+      // Listen for role changes
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_roles' },
+        () => {
+          playNotificationSound();
+          toast({
+            title: '🔑 Changement de rôle',
+            description: 'Un rôle utilisateur a été modifié',
+          });
+          loadUnreadCount();
+        }
+      )
       .subscribe();
 
     return () => {
