@@ -295,6 +295,7 @@ export type Database = {
           frequency: string
           id: string
           last_name: string
+          next_appointment: string | null
           notes: string | null
           phone: string
           postal_code: string
@@ -315,6 +316,7 @@ export type Database = {
           frequency: string
           id?: string
           last_name: string
+          next_appointment?: string | null
           notes?: string | null
           phone: string
           postal_code: string
@@ -335,6 +337,7 @@ export type Database = {
           frequency?: string
           id?: string
           last_name?: string
+          next_appointment?: string | null
           notes?: string | null
           phone?: string
           postal_code?: string
