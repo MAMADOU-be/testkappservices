@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollAnimation, useStaggeredAnimation } from '@/hooks/useScrollAnimation';
 import { Star, Quote, MessageSquareHeart } from 'lucide-react';
@@ -59,6 +59,20 @@ export function Testimonials() {
 
   const [ref, visible, getStyle] = useStaggeredAnimation<HTMLDivElement>(reviews.length, 120);
 
+  // Fallback: if animation hasn't triggered after 1s, force visibility
+  const [forceVisible, setForceVisible] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (reviews.length > 0 && !visible) {
+      timerRef.current = setTimeout(() => setForceVisible(true), 1000);
+    }
+    if (visible) {
+      setForceVisible(false);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [reviews.length, visible]);
+
   // Don't render section if no reviews and done loading
   if (!isLoading && reviews.length === 0) return null;
   if (isLoading) return null;
@@ -83,7 +97,7 @@ export function Testimonials() {
           {reviews.map((review, i) => (
             <div
               key={i}
-              style={getStyle(i)}
+              style={forceVisible ? { opacity: 1, transform: 'translateY(0)', transition: 'opacity 500ms, transform 500ms' } : getStyle(i)}
               className="bg-card rounded-2xl p-6 border shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group"
             >
               {/* Decorative quote */}
