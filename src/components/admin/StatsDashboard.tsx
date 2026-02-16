@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, TrendingUp, Users, FileText, Briefcase, MessageSquare, CheckCircle, Star, CalendarDays } from 'lucide-react';
+import { Loader2, TrendingUp, Users, FileText, Briefcase, MessageSquare, CheckCircle, Star, CalendarDays, Download, FileDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts';
 import { format, subMonths, subWeeks, subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, isAfter, isBefore, startOfQuarter, subQuarters } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -221,24 +222,127 @@ export function StatsDashboard() {
     });
   }
 
+  // Export CSV
+  const exportCSV = () => {
+    const periodLabel = PERIOD_LABELS[period];
+    const rows: string[][] = [
+      ['Rapport Statistiques KAP Services'],
+      [`Période: ${periodLabel}`],
+      [`Date d'export: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: fr })}`],
+      [],
+      ['=== INDICATEURS CLÉS ==='],
+      ['Demandes totales', String(totalRequests)],
+      ['Taux de conversion', `${conversionRate}%`],
+      ['Candidatures', String(totalJobs)],
+      ['Messages', `${totalMessages} (${unreadMessages} non lus)`],
+      ['Note moyenne', avgRating > 0 ? `${avgRating.toFixed(1)}/5 (${totalReviews} avis)` : 'Aucun avis'],
+      [],
+      ['=== DEMANDES PAR MOIS ==='],
+      ['Mois', 'Nombre'],
+      ...monthlyData.map(d => [d.month, String(d.count)]),
+      [],
+      ['=== RÉPARTITION PAR STATUT ==='],
+      ['Statut', 'Nombre'],
+      ...statusData.map(d => [d.name, String(d.value)]),
+      [],
+      ['=== TYPES DE SERVICE ==='],
+      ['Type', 'Nombre'],
+      ...typeData.map(d => [d.name, String(d.value)]),
+      [],
+      ['=== CANDIDATURES PAR MOIS ==='],
+      ['Mois', 'Nombre'],
+      ...monthlyJobsData.map(d => [d.month, String(d.count)]),
+    ];
+
+    if (employeeRatingsList.length > 0) {
+      rows.push([], ['=== AVIS PAR EMPLOYÉ ==='], ['Employé', 'Moyenne', 'Nombre d\'avis']);
+      employeeRatingsList.forEach(e => rows.push([e.name, e.avg.toFixed(1), String(e.count)]));
+    }
+
+    const csvContent = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stats-kap-${period}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export PDF (print)
+  const exportPDF = () => {
+    const periodLabel = PERIOD_LABELS[period];
+    const statusRows = statusData.map(d => `<tr><td>${d.name}</td><td>${d.value}</td></tr>`).join('');
+    const typeRows = typeData.map(d => `<tr><td>${d.name}</td><td>${d.value}</td></tr>`).join('');
+    const empRows = employeeRatingsList.map(e => `<tr><td>${e.name}</td><td>${e.avg.toFixed(1)}/5</td><td>${e.count}</td></tr>`).join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Statistiques KAP Services</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 40px; color: #1e293b; }
+        h1 { color: #2563eb; font-size: 22px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
+        h2 { font-size: 16px; margin-top: 28px; color: #334155; }
+        .meta { color: #64748b; font-size: 13px; margin-bottom: 24px; }
+        .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+        .kpi { background: #f1f5f9; border-radius: 8px; padding: 16px; text-align: center; }
+        .kpi-val { font-size: 28px; font-weight: 700; color: #2563eb; }
+        .kpi-label { font-size: 12px; color: #64748b; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; font-size: 13px; }
+        th { background: #f1f5f9; font-weight: 600; }
+        @media print { body { padding: 20px; } }
+      </style></head><body>
+      <h1>📊 Rapport Statistiques – KAP Services</h1>
+      <div class="meta">Période : ${periodLabel} · Exporté le ${format(new Date(), 'dd/MM/yyyy à HH:mm', { locale: fr })}</div>
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-val">${totalRequests}</div><div class="kpi-label">Demandes</div></div>
+        <div class="kpi"><div class="kpi-val">${conversionRate}%</div><div class="kpi-label">Conversion</div></div>
+        <div class="kpi"><div class="kpi-val">${totalJobs}</div><div class="kpi-label">Candidatures</div></div>
+        <div class="kpi"><div class="kpi-val">${totalMessages}</div><div class="kpi-label">Messages (${unreadMessages} non lus)</div></div>
+        <div class="kpi"><div class="kpi-val">${avgRating > 0 ? avgRating.toFixed(1) : '—'}/5</div><div class="kpi-label">${totalReviews} avis</div></div>
+      </div>
+      <h2>Répartition par statut</h2>
+      <table><tr><th>Statut</th><th>Nombre</th></tr>${statusRows}</table>
+      <h2>Types de service</h2>
+      <table><tr><th>Type</th><th>Nombre</th></tr>${typeRows}</table>
+      ${empRows ? `<h2>Avis par employé</h2><table><tr><th>Employé</th><th>Moyenne</th><th>Avis</th></tr>${empRows}</table>` : ''}
+      </body></html>`;
+
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => { w.print(); }, 400);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Period Filter */}
-      <div className="flex items-center justify-between">
+      {/* Period Filter & Export */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <CalendarDays className="h-5 w-5 text-primary" />
           Statistiques
         </h2>
-        <Select value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(PERIOD_LABELS).map(([key, label]) => (
-              <SelectItem key={key} value={key}>{label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <FileDown className="h-3.5 w-3.5 mr-1.5" />
+            CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportPDF}>
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            PDF
+          </Button>
+          <Select value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(PERIOD_LABELS).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* KPI Cards */}
