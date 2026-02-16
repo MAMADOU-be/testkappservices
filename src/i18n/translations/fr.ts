@@ -8,6 +8,7 @@ export const fr = {
     agencies: "Nos agences",
     faq: "FAQ",
     jobs: "Jobs",
+    reviews: "Avis",
     contact: "Contact",
     login: "Se connecter",
     logout: "Déconnexion",

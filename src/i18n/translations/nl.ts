@@ -7,6 +7,7 @@ export const nl = {
     agencies: "Onze agentschappen",
     faq: "FAQ",
     jobs: "Jobs",
+    reviews: "Beoordelingen",
     contact: "Contact",
     login: "Inloggen",
     logout: "Uitloggen",

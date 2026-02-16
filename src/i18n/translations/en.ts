@@ -7,6 +7,7 @@ export const en = {
     agencies: "Our agencies",
     faq: "FAQ",
     jobs: "Jobs",
+    reviews: "Reviews",
     contact: "Contact",
     login: "Log in",
     logout: "Log out",
