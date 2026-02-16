@@ -23,13 +23,13 @@ const Index = () => {
         <About />
         <Services />
         <HowItWorks />
-        <Testimonials />
         <Agencies />
         <RequestForm />
         <IroningRegistrationForm />
         <BlogSection />
         <FAQ />
         <Recruitment />
+        <Testimonials />
         <Contact />
       </main>
       <Footer />
