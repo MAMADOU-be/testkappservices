@@ -17,7 +17,7 @@ async function sendEmail(payload: EmailPayload): Promise<{ success: boolean; err
     return { success: false, error: "SENDGRID_API_KEY not configured" };
   }
 
-  const fromEmail = "info@kap-services.be";
+  const fromEmail = "jolooftech@gmail.com";
   const fromName = payload.from_name || "KAP Services";
 
   const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
         break;
       case "staff_notification":
         emailContent = staffNotificationEmail(data);
-        to = "info@kap-services.be";
+        to = "jolooftech@gmail.com";
         break;
       case "user_notification":
         emailContent = userNotificationEmail(data);
