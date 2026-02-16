@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StatsSkeleton, TableSkeleton } from '@/components/skeletons/DashboardSkeletons';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -66,6 +71,7 @@ interface ServiceRequest {
   comments: string | null;
   status: string;
   notes: string | null;
+  next_appointment: string | null;
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
@@ -83,6 +89,8 @@ export function ServiceRequestsTable() {
   const [notes, setNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [appointmentDate, setAppointmentDate] = useState<Date | undefined>();
+  const [appointmentTime, setAppointmentTime] = useState('09:00');
   const { toast } = useToast();
 
   const loadRequests = async () => {
@@ -171,6 +179,45 @@ export function ServiceRequestsTable() {
   const openDetails = (request: ServiceRequest) => {
     setSelectedRequest(request);
     setNotes(request.notes || '');
+    if (request.next_appointment) {
+      const d = new Date(request.next_appointment);
+      setAppointmentDate(d);
+      setAppointmentTime(format(d, 'HH:mm'));
+    } else {
+      setAppointmentDate(undefined);
+      setAppointmentTime('09:00');
+    }
+  };
+
+  const updateAppointment = async (id: string) => {
+    if (!appointmentDate) {
+      // Clear appointment
+      const { error } = await supabase
+        .from('service_requests')
+        .update({ next_appointment: null })
+        .eq('id', id);
+      if (!error) {
+        toast({ title: 'Rendez-vous supprimé' });
+        loadRequests();
+      }
+      return;
+    }
+    const [hours, minutes] = appointmentTime.split(':').map(Number);
+    const dt = new Date(appointmentDate);
+    dt.setHours(hours, minutes, 0, 0);
+    
+    setIsUpdating(true);
+    const { error } = await supabase
+      .from('service_requests')
+      .update({ next_appointment: dt.toISOString() })
+      .eq('id', id);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de planifier le rendez-vous' });
+    } else {
+      toast({ title: '📅 Rendez-vous planifié', description: `Le ${format(dt, 'dd/MM/yyyy à HH:mm', { locale: fr })}` });
+      loadRequests();
+    }
+    setIsUpdating(false);
   };
 
   const getStatusBadge = (status: string) => {
@@ -464,6 +511,60 @@ export function ServiceRequestsTable() {
                                   ) : null}
                                   Sauvegarder les notes
                                 </Button>
+                              </div>
+
+                              {/* Appointment Scheduling */}
+                              <div>
+                                <h4 className="font-medium flex items-center gap-2 mb-2">
+                                  <Calendar className="h-4 w-4" />
+                                  Prochain rendez-vous
+                                </h4>
+                                {request.next_appointment && (
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    Actuellement planifié : <strong>{format(new Date(request.next_appointment), 'dd/MM/yyyy à HH:mm', { locale: fr })}</strong>
+                                  </p>
+                                )}
+                                <div className="flex items-end gap-3 flex-wrap">
+                                  <div>
+                                    <Label className="text-xs">Date</Label>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <Button variant="outline" size="sm" className={cn("w-[160px] justify-start text-left font-normal", !appointmentDate && "text-muted-foreground")}>
+                                          <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                                          {appointmentDate ? format(appointmentDate, 'dd/MM/yyyy') : 'Choisir'}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0" align="start">
+                                        <CalendarComponent
+                                          mode="single"
+                                          selected={appointmentDate}
+                                          onSelect={setAppointmentDate}
+                                          disabled={(date) => date < new Date()}
+                                          initialFocus
+                                          className={cn("p-3 pointer-events-auto")}
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs">Heure</Label>
+                                    <Input
+                                      type="time"
+                                      value={appointmentTime}
+                                      onChange={(e) => setAppointmentTime(e.target.value)}
+                                      className="w-[110px] h-9"
+                                    />
+                                  </div>
+                                  <Button size="sm" onClick={() => updateAppointment(request.id)} disabled={isUpdating}>
+                                    {isUpdating && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
+                                    Planifier
+                                  </Button>
+                                  {request.next_appointment && (
+                                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { setAppointmentDate(undefined); updateAppointment(request.id); }}>
+                                      Supprimer
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </DialogContent>
