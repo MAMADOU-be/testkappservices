@@ -147,6 +147,44 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Send confirmation email to client
+    const emailUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`;
+    const emailHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+    };
+
+    // Fire-and-forget: don't block the response
+    const confirmationPayload = {
+      template: "service_request_confirmation",
+      data: {
+        first_name: (body.first_name as string).trim(),
+        last_name: (body.last_name as string).trim(),
+        email: (body.email as string).trim(),
+        service_type: (body.service_type as string).trim(),
+        frequency: (body.frequency as string).trim(),
+        city: (body.city as string).trim(),
+      },
+    };
+
+    const staffPayload = {
+      template: "staff_notification",
+      data: {
+        type: "service_request",
+        first_name: (body.first_name as string).trim(),
+        last_name: (body.last_name as string).trim(),
+        email: (body.email as string).trim(),
+        phone: (body.phone as string).trim(),
+        details: `Service: ${(body.service_type as string).trim()} | Fréquence: ${(body.frequency as string).trim()} | Ville: ${(body.city as string).trim()}`,
+      },
+    };
+
+    // Send emails in parallel (non-blocking)
+    Promise.all([
+      fetch(emailUrl, { method: "POST", headers: emailHeaders, body: JSON.stringify(confirmationPayload) }).catch((e) => console.warn("Confirmation email failed:", e)),
+      fetch(emailUrl, { method: "POST", headers: emailHeaders, body: JSON.stringify(staffPayload) }).catch((e) => console.warn("Staff email failed:", e)),
+    ]);
+
     console.log(`Service request submitted from IP: ${ip}`);
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

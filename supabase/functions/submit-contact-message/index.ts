@@ -115,6 +115,27 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Notify staff by email (fire-and-forget)
+    const emailUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`;
+    fetch(emailUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+      },
+      body: JSON.stringify({
+        template: "staff_notification",
+        data: {
+          type: "contact_message",
+          first_name: (body.prenom as string).trim(),
+          last_name: (body.nom as string).trim(),
+          email: (body.email as string).trim(),
+          phone: (body.telephone as string).trim(),
+          details: (body.message as string).trim().slice(0, 200),
+        },
+      }),
+    }).catch((e) => console.warn("Staff notification email failed:", e));
+
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
