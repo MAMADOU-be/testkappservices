@@ -107,7 +107,7 @@ export function ContactMessagesTable({ highlightId, onHighlightConsumed }: Conta
     } else {
       toast({ title: 'Notes sauvegardées' });
       setMessages(prev => prev.map(m => m.id === selected.id ? { ...m, notes } : m));
-      setSelected(prev => prev ? { ...prev, notes } : null);
+      setSelected(null);
     }
   };
 
