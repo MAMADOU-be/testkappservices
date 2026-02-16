@@ -18,6 +18,7 @@ import { ClientRequestsView } from '@/components/profile/ClientRequestsView';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import { ContactMessagesTable } from '@/components/admin/ContactMessagesTable';
 import { StatsDashboard } from '@/components/admin/StatsDashboard';
+import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { BlogManagement } from '@/components/admin/BlogManagement';
 import {
   Loader2,
@@ -32,6 +33,7 @@ import {
   MessageSquare,
   BarChart3,
   Newspaper,
+  Eye,
 } from 'lucide-react';
 
 const Profile = () => {
@@ -98,7 +100,7 @@ const Profile = () => {
   };
 
   // Determine number of tabs
-  const gridCols = isAdmin ? 'grid-cols-8' : isStaff ? 'grid-cols-6' : 'grid-cols-3';
+  const gridCols = isAdmin ? 'grid-cols-9' : isStaff ? 'grid-cols-6' : 'grid-cols-3';
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -191,6 +193,12 @@ const Profile = () => {
                 <span className="hidden sm:inline">Blog</span>
               </TabsTrigger>
             )}
+            {isAdmin && (
+              <TabsTrigger value="analytics" className="flex items-center gap-1.5 text-xs">
+                <Eye className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Analytics</span>
+              </TabsTrigger>
+            )}
             {!isStaff && (
               <TabsTrigger value="my-requests" className="flex items-center gap-1.5 text-xs">
                 <FileText className="h-3.5 w-3.5" />
@@ -243,6 +251,11 @@ const Profile = () => {
             </TabsContent>
           )}
 
+          {isAdmin && (
+            <TabsContent value="analytics">
+              <AnalyticsDashboard />
+            </TabsContent>
+          )}
           {!isStaff && (
             <TabsContent value="my-requests">
               <div className="max-w-3xl">
