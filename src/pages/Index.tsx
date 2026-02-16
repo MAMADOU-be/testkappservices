@@ -13,6 +13,7 @@ import { IroningRegistrationForm } from "@/components/IroningRegistrationForm";
 import { BlogSection } from "@/components/BlogSection";
 import { Testimonials } from "@/components/Testimonials";
 import { BackToTop } from "@/components/BackToTop";
+import { AdBanner } from "@/components/AdBanner";
 
 const Index = () => {
   return (
@@ -21,11 +22,14 @@ const Index = () => {
       <main>
         <Hero />
         <About />
+        <AdBanner adSlot="1234567890" adFormat="horizontal" className="max-w-5xl mx-auto px-4" />
         <Services />
         <HowItWorks />
+        <AdBanner adSlot="1234567891" adFormat="horizontal" className="max-w-5xl mx-auto px-4" />
         <Agencies />
         <RequestForm />
         <IroningRegistrationForm />
+        <AdBanner adSlot="1234567892" adFormat="horizontal" className="max-w-5xl mx-auto px-4" />
         <BlogSection />
         <FAQ />
         <Recruitment />
