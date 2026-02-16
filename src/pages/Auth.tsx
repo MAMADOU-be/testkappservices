@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, ArrowLeft, User, Gift, Eye, EyeOff, Check, X } from 'lucide-react';
 import { z } from 'zod';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const emailSchema = z.string().email('Email invalide');
 const passwordSchema = z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères');
@@ -39,6 +40,11 @@ function getPasswordStrength(password: string) {
 }
 
 const Auth = () => {
+  usePageMeta({
+    title: "Connexion | Kap Services – Espace client titres-services",
+    description: "Connectez-vous à votre espace client Kap Services pour gérer vos demandes de titres-services, suivre vos prestations et parrainer vos proches.",
+    canonical: "/auth",
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');

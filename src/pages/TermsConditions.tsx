@@ -1,9 +1,15 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const TermsConditions = () => {
   const navigate = useNavigate();
+  usePageMeta({
+    title: "Conditions générales | Kap Services – Titres-Services",
+    description: "Conditions générales d'utilisation de Kap Services. Tarifs, prestations, annulations et obligations pour les services de titres-services.",
+    canonical: "/conditions-generales",
+  });
 
   return (
     <div className="min-h-screen bg-background">

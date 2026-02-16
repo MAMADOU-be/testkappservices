@@ -1,9 +1,15 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
+  usePageMeta({
+    title: "Politique de confidentialité | Kap Services – Titres-Services",
+    description: "Politique de confidentialité de Kap Services. Découvrez comment nous protégeons vos données personnelles conformément au RGPD.",
+    canonical: "/confidentialite",
+  });
 
   return (
     <div className="min-h-screen bg-background">
