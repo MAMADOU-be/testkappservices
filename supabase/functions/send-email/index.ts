@@ -96,25 +96,31 @@ function serviceRequestConfirmationEmail(data: {
 }
 
 function staffNotificationEmail(data: {
-  type: "service_request" | "contact_message" | "job_application";
+  type: string;
   first_name: string;
   last_name: string;
   email: string;
   phone: string;
   details?: string;
 }): { subject: string; html: string } {
-  const typeLabels = {
+  const typeLabels: Record<string, string> = {
     service_request: "🏠 Nouvelle demande de service",
     contact_message: "✉️ Nouveau message de contact",
     job_application: "💼 Nouvelle candidature",
+    new_user: "👤 Nouveau compte créé",
+    profile_updated: "✏️ Profil mis à jour",
+    role_changed: "🔑 Rôle modifié",
+    status_changed: "📋 Statut demande modifié",
   };
 
+  const label = typeLabels[data.type] || `📌 Notification: ${data.type}`;
+
   return {
-    subject: typeLabels[data.type],
+    subject: label,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: #1e293b; padding: 20px; border-radius: 12px 12px 0 0; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 20px;">${typeLabels[data.type]}</h1>
+          <h1 style="color: white; margin: 0; font-size: 20px;">${label}</h1>
         </div>
         <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
           <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
