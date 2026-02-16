@@ -1,9 +1,15 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const LegalMentions = () => {
   const navigate = useNavigate();
+  usePageMeta({
+    title: "Mentions légales | Kap Services – Titres-Services Belgique",
+    description: "Mentions légales de Kap Services SRL, agence agréée de titres-services. Informations sur l'hébergement, les droits d'auteur et les conditions d'utilisation.",
+    canonical: "/mentions-legales",
+  });
 
   return (
     <div className="min-h-screen bg-background">
