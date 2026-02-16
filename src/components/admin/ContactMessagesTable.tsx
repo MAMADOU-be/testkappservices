@@ -35,7 +35,12 @@ interface ContactMessage {
   created_at: string;
 }
 
-export function ContactMessagesTable() {
+interface ContactMessagesTableProps {
+  highlightId?: string | null;
+  onHighlightConsumed?: () => void;
+}
+
+export function ContactMessagesTable({ highlightId, onHighlightConsumed }: ContactMessagesTableProps) {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<ContactMessage | null>(null);
@@ -69,6 +74,17 @@ export function ContactMessagesTable() {
 
     return () => { supabase.removeChannel(channel); };
   }, []);
+
+  // Auto-open detail when navigating from notification
+  useEffect(() => {
+    if (highlightId && messages.length > 0) {
+      const target = messages.find(m => m.id === highlightId);
+      if (target) {
+        openDetail(target);
+        onHighlightConsumed?.();
+      }
+    }
+  }, [highlightId, messages]);
 
   const openDetail = async (msg: ContactMessage) => {
     setSelected(msg);

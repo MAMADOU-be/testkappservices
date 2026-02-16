@@ -27,7 +27,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -83,7 +82,12 @@ const statusConfig: Record<string, { label: string; color: string; icon: typeof 
   completed: { label: 'Terminé', color: 'bg-gray-100 text-gray-800 border-gray-200', icon: CheckCircle },
 };
 
-export function ServiceRequestsTable() {
+interface ServiceRequestsTableProps {
+  highlightId?: string | null;
+  onHighlightConsumed?: () => void;
+}
+
+export function ServiceRequestsTable({ highlightId, onHighlightConsumed }: ServiceRequestsTableProps) {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
@@ -131,6 +135,17 @@ export function ServiceRequestsTable() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Auto-open detail when navigating from notification
+  useEffect(() => {
+    if (highlightId && requests.length > 0) {
+      const target = requests.find(r => r.id === highlightId);
+      if (target) {
+        openDetails(target);
+        onHighlightConsumed?.();
+      }
+    }
+  }, [highlightId, requests]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     setIsUpdating(true);
@@ -436,157 +451,10 @@ export function ServiceRequestsTable() {
                         </Select>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" onClick={() => openDetails(request)}>
-                              <Eye className="h-4 w-4 mr-1" />
-                              Détails
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>
-                                Demande de {request.first_name} {request.last_name}
-                              </DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-6 mt-4">
-                              <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                  <div>
-                                    <h4 className="font-medium flex items-center gap-2 mb-2">
-                                      <User className="h-4 w-4" />
-                                      Coordonnées
-                                    </h4>
-                                    <div className="text-sm space-y-1 text-muted-foreground">
-                                      <p>{request.first_name} {request.last_name}</p>
-                                      <p className="flex items-center gap-1">
-                                        <Phone className="h-3 w-3" />
-                                        {request.phone}
-                                      </p>
-                                      <p className="flex items-center gap-1">
-                                        <Mail className="h-3 w-3" />
-                                        {request.email}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium flex items-center gap-2 mb-2">
-                                      <MapPin className="h-4 w-4" />
-                                      Adresse
-                                    </h4>
-                                    <div className="text-sm text-muted-foreground">
-                                      <p>{request.street}</p>
-                                      <p>{request.postal_code} {request.city}</p>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="space-y-4">
-                                  <div>
-                                    <h4 className="font-medium flex items-center gap-2 mb-2">
-                                      <Calendar className="h-4 w-4" />
-                                      Service demandé
-                                    </h4>
-                                    <div className="text-sm space-y-1 text-muted-foreground">
-                                      <p><strong>Type:</strong> {request.service_type}</p>
-                                      <p><strong>Fréquence:</strong> {request.frequency}</p>
-                                      {request.preferred_day && (
-                                        <p><strong>Jours:</strong> {request.preferred_day}</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium mb-2">Statut</h4>
-                                    {getStatusBadge(request.status)}
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {request.comments && (
-                                <div>
-                                  <h4 className="font-medium mb-2">Message du client</h4>
-                                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                                    {request.comments}
-                                  </p>
-                                </div>
-                              )}
-
-                              <div>
-                                <h4 className="font-medium mb-2">Notes internes</h4>
-                                <Textarea
-                                  value={notes}
-                                  onChange={(e) => setNotes(e.target.value)}
-                                  placeholder="Ajouter des notes..."
-                                  className="min-h-[100px]"
-                                />
-                                <Button
-                                  className="mt-2"
-                                  size="sm"
-                                  onClick={() => updateNotes(request.id)}
-                                  disabled={isUpdating}
-                                >
-                                  {isUpdating ? (
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  ) : null}
-                                  Sauvegarder les notes
-                                </Button>
-                              </div>
-
-                              {/* Appointment Scheduling */}
-                              <div>
-                                <h4 className="font-medium flex items-center gap-2 mb-2">
-                                  <Calendar className="h-4 w-4" />
-                                  Prochain rendez-vous
-                                </h4>
-                                {request.next_appointment && (
-                                  <p className="text-sm text-muted-foreground mb-2">
-                                    Actuellement planifié : <strong>{format(new Date(request.next_appointment), 'dd/MM/yyyy à HH:mm', { locale: fr })}</strong>
-                                  </p>
-                                )}
-                                <div className="flex items-end gap-3 flex-wrap">
-                                  <div>
-                                    <Label className="text-xs">Date</Label>
-                                    <Popover>
-                                      <PopoverTrigger asChild>
-                                        <Button variant="outline" size="sm" className={cn("w-[160px] justify-start text-left font-normal", !appointmentDate && "text-muted-foreground")}>
-                                          <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                                          {appointmentDate ? format(appointmentDate, 'dd/MM/yyyy') : 'Choisir'}
-                                        </Button>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0" align="start">
-                                        <CalendarComponent
-                                          mode="single"
-                                          selected={appointmentDate}
-                                          onSelect={setAppointmentDate}
-                                          disabled={(date) => date < new Date()}
-                                          initialFocus
-                                          className={cn("p-3 pointer-events-auto")}
-                                        />
-                                      </PopoverContent>
-                                    </Popover>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs">Heure</Label>
-                                    <Input
-                                      type="time"
-                                      value={appointmentTime}
-                                      onChange={(e) => setAppointmentTime(e.target.value)}
-                                      className="w-[110px] h-9"
-                                    />
-                                  </div>
-                                  <Button size="sm" onClick={() => updateAppointment(request.id)} disabled={isUpdating}>
-                                    {isUpdating && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
-                                    Planifier
-                                  </Button>
-                                  {request.next_appointment && (
-                                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { setAppointmentDate(undefined); updateAppointment(request.id); }}>
-                                      Supprimer
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                        <Button variant="ghost" size="sm" onClick={() => openDetails(request)}>
+                          <Eye className="h-4 w-4 mr-1" />
+                          Détails
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -596,6 +464,156 @@ export function ServiceRequestsTable() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!selectedRequest} onOpenChange={(open) => { if (!open) setSelectedRequest(null); }}>
+        <DialogContent className="max-w-2xl">
+          {selectedRequest && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  Demande de {selectedRequest.first_name} {selectedRequest.last_name}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6 mt-4">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium flex items-center gap-2 mb-2">
+                        <User className="h-4 w-4" />
+                        Coordonnées
+                      </h4>
+                      <div className="text-sm space-y-1 text-muted-foreground">
+                        <p>{selectedRequest.first_name} {selectedRequest.last_name}</p>
+                        <p className="flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {selectedRequest.phone}
+                        </p>
+                        <p className="flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {selectedRequest.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium flex items-center gap-2 mb-2">
+                        <MapPin className="h-4 w-4" />
+                        Adresse
+                      </h4>
+                      <div className="text-sm text-muted-foreground">
+                        <p>{selectedRequest.street}</p>
+                        <p>{selectedRequest.postal_code} {selectedRequest.city}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium flex items-center gap-2 mb-2">
+                        <Calendar className="h-4 w-4" />
+                        Service demandé
+                      </h4>
+                      <div className="text-sm space-y-1 text-muted-foreground">
+                        <p><strong>Type:</strong> {selectedRequest.service_type}</p>
+                        <p><strong>Fréquence:</strong> {selectedRequest.frequency}</p>
+                        {selectedRequest.preferred_day && (
+                          <p><strong>Jours:</strong> {selectedRequest.preferred_day}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Statut</h4>
+                      {getStatusBadge(selectedRequest.status)}
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedRequest.comments && (
+                  <div>
+                    <h4 className="font-medium mb-2">Message du client</h4>
+                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                      {selectedRequest.comments}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <h4 className="font-medium mb-2">Notes internes</h4>
+                  <Textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Ajouter des notes..."
+                    className="min-h-[100px]"
+                  />
+                  <Button
+                    className="mt-2"
+                    size="sm"
+                    onClick={() => updateNotes(selectedRequest.id)}
+                    disabled={isUpdating}
+                  >
+                    {isUpdating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : null}
+                    Sauvegarder les notes
+                  </Button>
+                </div>
+
+                {/* Appointment Scheduling */}
+                <div>
+                  <h4 className="font-medium flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4" />
+                    Prochain rendez-vous
+                  </h4>
+                  {selectedRequest.next_appointment && (
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Actuellement planifié : <strong>{format(new Date(selectedRequest.next_appointment), 'dd/MM/yyyy à HH:mm', { locale: fr })}</strong>
+                    </p>
+                  )}
+                  <div className="flex items-end gap-3 flex-wrap">
+                    <div>
+                      <Label className="text-xs">Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className={cn("w-[160px] justify-start text-left font-normal", !appointmentDate && "text-muted-foreground")}>
+                            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                            {appointmentDate ? format(appointmentDate, 'dd/MM/yyyy') : 'Choisir'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={appointmentDate}
+                            onSelect={setAppointmentDate}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Heure</Label>
+                      <Input
+                        type="time"
+                        value={appointmentTime}
+                        onChange={(e) => setAppointmentTime(e.target.value)}
+                        className="w-[110px] h-9"
+                      />
+                    </div>
+                    <Button size="sm" onClick={() => updateAppointment(selectedRequest.id)} disabled={isUpdating}>
+                      {isUpdating && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
+                      Planifier
+                    </Button>
+                    {selectedRequest.next_appointment && (
+                      <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { setAppointmentDate(undefined); updateAppointment(selectedRequest.id); }}>
+                        Supprimer
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

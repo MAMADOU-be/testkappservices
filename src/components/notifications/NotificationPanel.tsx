@@ -22,7 +22,7 @@ interface NotificationPanelProps {
   unreadCount: number;
   markAllAsRead: () => Promise<void>;
   loadUnreadCount: () => Promise<void>;
-  onNavigateToTab?: (tab: string) => void;
+  onNavigateToTab?: (tab: string, referenceId?: string | null) => void;
 }
 
 export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount, onNavigateToTab }: NotificationPanelProps) {
@@ -67,7 +67,7 @@ export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount,
     if (!n.is_read) await markOneAsRead(n.id);
     const tab = getTabTarget(n.type);
     if (tab && onNavigateToTab) {
-      onNavigateToTab(tab);
+      onNavigateToTab(tab, n.reference_id);
       setOpen(false);
     }
   };
@@ -88,9 +88,15 @@ export function NotificationPanel({ unreadCount, markAllAsRead, loadUnreadCount,
 
   const getTabTarget = (type: string) => {
     switch (type) {
-      case 'service_request': return 'requests';
+      case 'service_request':
+      case 'status_changed':
+        return 'requests';
       case 'job_application': return 'jobs';
       case 'contact_message': return 'messages';
+      case 'new_user':
+      case 'role_changed':
+        return 'users';
+      case 'profile_updated': return 'profile';
       default: return null;
     }
   };

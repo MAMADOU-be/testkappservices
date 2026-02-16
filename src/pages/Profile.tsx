@@ -41,6 +41,12 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('');
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  const handleNavigateToTab = (tab: string, referenceId?: string | null) => {
+    setActiveTab(tab);
+    setHighlightId(referenceId || null);
+  };
 
   // Activate presence tracking
   usePresence();
@@ -135,7 +141,7 @@ const Profile = () => {
                 unreadCount={unreadCount}
                 markAllAsRead={markAllAsRead}
                 loadUnreadCount={loadUnreadCount}
-                onNavigateToTab={setActiveTab}
+                onNavigateToTab={handleNavigateToTab}
               />
             )}
             <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -209,13 +215,13 @@ const Profile = () => {
 
           {isStaff && (
             <TabsContent value="requests">
-              <ServiceRequestsTable />
+              <ServiceRequestsTable highlightId={highlightId} onHighlightConsumed={() => setHighlightId(null)} />
             </TabsContent>
           )}
 
           {isAdmin && (
             <TabsContent value="jobs">
-              <JobApplicationsTable />
+              <JobApplicationsTable highlightId={highlightId} onHighlightConsumed={() => setHighlightId(null)} />
             </TabsContent>
           )}
 
@@ -227,7 +233,7 @@ const Profile = () => {
 
           {isStaff && (
             <TabsContent value="messages">
-              <ContactMessagesTable />
+              <ContactMessagesTable highlightId={highlightId} onHighlightConsumed={() => setHighlightId(null)} />
             </TabsContent>
           )}
 
