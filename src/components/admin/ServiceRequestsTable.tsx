@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { notifyUser, notifyStaff } from '@/lib/sendNotificationEmail';
 import { StatsSkeleton, TableSkeleton } from '@/components/skeletons/DashboardSkeletons';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -149,6 +150,23 @@ export function ServiceRequestsTable() {
         title: 'Statut mis à jour',
         description: `La demande a été marquée comme "${statusConfig[newStatus]?.label || newStatus}"`,
       });
+      // Email notification to client
+      const request = requests.find(r => r.id === id);
+      if (request) {
+        notifyUser({
+          email: request.email,
+          event: 'status_changed',
+          user_name: request.first_name,
+          details: `Le statut de votre demande de service est passé à <strong>${statusConfig[newStatus]?.label || newStatus}</strong>.`,
+        });
+        notifyStaff({
+          type: 'status_changed',
+          first_name: request.first_name,
+          last_name: request.last_name,
+          email: request.email,
+          details: `Statut → ${statusConfig[newStatus]?.label || newStatus}`,
+        });
+      }
       loadRequests();
     }
     setIsUpdating(false);

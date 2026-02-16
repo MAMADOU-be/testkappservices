@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { notifyUser, notifyStaff } from '@/lib/sendNotificationEmail';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -115,6 +116,22 @@ export function UserManagement() {
       });
       if (error) throw error;
       toast({ title: 'Rôle ajouté', description: `Le rôle "${roleConfig[role]?.label}" a été ajouté.` });
+      const targetUser = users.find(u => u.id === userId);
+      if (targetUser) {
+        notifyUser({
+          email: targetUser.email,
+          event: 'role_added',
+          user_name: targetUser.display_name || targetUser.email.split('@')[0],
+          details: `Le rôle <strong>${roleConfig[role]?.label}</strong> a été ajouté à votre compte.`,
+        });
+        notifyStaff({
+          type: 'role_changed',
+          first_name: targetUser.display_name || targetUser.email.split('@')[0],
+          last_name: '',
+          email: targetUser.email,
+          details: `Rôle "${roleConfig[role]?.label}" ajouté`,
+        });
+      }
       await loadUsers();
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Erreur', description: err.message || 'Impossible d\'ajouter le rôle' });
@@ -132,6 +149,22 @@ export function UserManagement() {
       });
       if (error) throw error;
       toast({ title: 'Rôle retiré', description: `Le rôle "${roleConfig[role]?.label}" a été retiré.` });
+      const targetUser = users.find(u => u.id === userId);
+      if (targetUser) {
+        notifyUser({
+          email: targetUser.email,
+          event: 'role_removed',
+          user_name: targetUser.display_name || targetUser.email.split('@')[0],
+          details: `Le rôle <strong>${roleConfig[role]?.label}</strong> a été retiré de votre compte.`,
+        });
+        notifyStaff({
+          type: 'role_changed',
+          first_name: targetUser.display_name || targetUser.email.split('@')[0],
+          last_name: '',
+          email: targetUser.email,
+          details: `Rôle "${roleConfig[role]?.label}" retiré`,
+        });
+      }
       await loadUsers();
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Erreur', description: err.message || 'Impossible de retirer le rôle' });

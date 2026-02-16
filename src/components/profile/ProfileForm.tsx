@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { notifyStaff } from '@/lib/sendNotificationEmail';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
@@ -65,6 +66,13 @@ export const ProfileForm = () => {
       toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de mettre à jour le profil' });
     } else {
       toast({ title: 'Profil mis à jour', description: 'Vos informations ont été enregistrées' });
+      notifyStaff({
+        type: 'profile_updated',
+        first_name: displayName,
+        last_name: '',
+        email: user?.email || '',
+        details: 'Profil mis à jour',
+      });
     }
   };
 
