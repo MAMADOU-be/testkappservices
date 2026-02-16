@@ -1,11 +1,33 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, TrendingUp, Users, FileText, Briefcase, MessageSquare, CheckCircle, Star } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, TrendingUp, Users, FileText, Briefcase, MessageSquare, CheckCircle, Star, CalendarDays } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subMonths, subWeeks, subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, isAfter, isBefore, startOfQuarter, subQuarters } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+type PeriodFilter = 'week' | 'month' | 'quarter' | 'year' | 'all';
+
+const PERIOD_LABELS: Record<PeriodFilter, string> = {
+  week: 'Cette semaine',
+  month: 'Ce mois',
+  quarter: 'Ce trimestre',
+  year: 'Cette année',
+  all: 'Tout',
+};
+
+function getDateRange(period: PeriodFilter): Date | null {
+  const now = new Date();
+  switch (period) {
+    case 'week': return subWeeks(now, 1);
+    case 'month': return subMonths(now, 1);
+    case 'quarter': return subQuarters(now, 1);
+    case 'year': return subMonths(now, 12);
+    case 'all': return null;
+  }
+}
 
 interface MonthlyData {
   month: string;
@@ -53,6 +75,7 @@ const SERVICE_COLORS = [
 
 export function StatsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
+  const [period, setPeriod] = useState<PeriodFilter>('all');
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [jobApplications, setJobApplications] = useState<any[]>([]);
   const [contactMessages, setContactMessages] = useState<any[]>([]);
@@ -91,6 +114,18 @@ export function StatsDashboard() {
     loadData();
   }, [loadData]);
 
+  // Filter data by period
+  const filterByPeriod = useCallback(<T extends { created_at: string }>(items: T[]): T[] => {
+    const startDate = getDateRange(period);
+    if (!startDate) return items;
+    return items.filter(item => isAfter(new Date(item.created_at), startDate));
+  }, [period]);
+
+  const filteredRequests = useMemo(() => filterByPeriod(serviceRequests), [filterByPeriod, serviceRequests]);
+  const filteredJobs = useMemo(() => filterByPeriod(jobApplications), [filterByPeriod, jobApplications]);
+  const filteredMessages = useMemo(() => filterByPeriod(contactMessages), [filterByPeriod, contactMessages]);
+  const filteredReviews = useMemo(() => filterByPeriod(reviews), [filterByPeriod, reviews]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -99,22 +134,22 @@ export function StatsDashboard() {
     );
   }
 
-  // KPI cards
-  const totalRequests = serviceRequests.length;
-  const completedRequests = serviceRequests.filter(r => r.status === 'completed').length;
+  // KPI cards (use filtered data)
+  const totalRequests = filteredRequests.length;
+  const completedRequests = filteredRequests.filter(r => r.status === 'completed').length;
   const conversionRate = totalRequests > 0 ? Math.round((completedRequests / totalRequests) * 100) : 0;
-  const pendingRequests = serviceRequests.filter(r => r.status === 'pending').length;
-  const totalJobs = jobApplications.length;
-  const totalMessages = contactMessages.length;
-  const unreadMessages = contactMessages.filter(m => !m.is_read).length;
+  const pendingRequests = filteredRequests.filter(r => r.status === 'pending').length;
+  const totalJobs = filteredJobs.length;
+  const totalMessages = filteredMessages.length;
+  const unreadMessages = filteredMessages.filter(m => !m.is_read).length;
 
   // Reviews stats
-  const totalReviews = reviews.length;
-  const avgRating = totalReviews > 0 ? (reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / totalReviews) : 0;
+  const totalReviews = filteredReviews.length;
+  const avgRating = totalReviews > 0 ? (filteredReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / totalReviews) : 0;
 
   // Employee ratings
   const employeeRatings: Record<string, { total: number; count: number; reviews: any[] }> = {};
-  reviews.forEach((r: any) => {
+  filteredReviews.forEach((r: any) => {
     const empId = r.employee_id || 'unassigned';
     if (!employeeRatings[empId]) employeeRatings[empId] = { total: 0, count: 0, reviews: [] };
     employeeRatings[empId].total += r.rating;
@@ -137,7 +172,7 @@ export function StatsDashboard() {
     const date = subMonths(new Date(), i);
     const start = startOfMonth(date);
     const end = endOfMonth(date);
-    const count = serviceRequests.filter(r => {
+    const count = filteredRequests.filter(r => {
       const d = new Date(r.created_at);
       return d >= start && d <= end;
     }).length;
@@ -149,7 +184,7 @@ export function StatsDashboard() {
 
   // Status distribution
   const statusCounts: Record<string, number> = {};
-  serviceRequests.forEach(r => {
+  filteredRequests.forEach(r => {
     statusCounts[r.status] = (statusCounts[r.status] || 0) + 1;
   });
   const statusData: StatusData[] = Object.entries(statusCounts).map(([status, value]) => ({
@@ -160,7 +195,7 @@ export function StatsDashboard() {
 
   // Service type distribution
   const typeCounts: Record<string, number> = {};
-  serviceRequests.forEach(r => {
+  filteredRequests.forEach(r => {
     const type = r.service_type || 'Autre';
     typeCounts[type] = (typeCounts[type] || 0) + 1;
   });
@@ -176,7 +211,7 @@ export function StatsDashboard() {
     const date = subMonths(new Date(), i);
     const start = startOfMonth(date);
     const end = endOfMonth(date);
-    const count = jobApplications.filter(r => {
+    const count = filteredJobs.filter(r => {
       const d = new Date(r.created_at);
       return d >= start && d <= end;
     }).length;
@@ -188,6 +223,24 @@ export function StatsDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Period Filter */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <CalendarDays className="h-5 w-5 text-primary" />
+          Statistiques
+        </h2>
+        <Select value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(PERIOD_LABELS).map(([key, label]) => (
+              <SelectItem key={key} value={key}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
