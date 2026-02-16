@@ -11,6 +11,7 @@ import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { IroningRegistrationForm } from "@/components/IroningRegistrationForm";
 import { BlogSection } from "@/components/BlogSection";
+import { Testimonials } from "@/components/Testimonials";
 import { BackToTop } from "@/components/BackToTop";
 
 const Index = () => {
@@ -22,6 +23,7 @@ const Index = () => {
         <About />
         <Services />
         <HowItWorks />
+        <Testimonials />
         <Agencies />
         <RequestForm />
         <IroningRegistrationForm />
