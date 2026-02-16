@@ -222,6 +222,25 @@ export function StatsDashboard() {
     });
   }
 
+  // Monthly reviews data (count + average rating)
+  const monthlyReviewsData: { month: string; count: number; avg: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const date = subMonths(new Date(), i);
+    const start = startOfMonth(date);
+    const end = endOfMonth(date);
+    const monthReviews = filteredReviews.filter((r: any) => {
+      const d = new Date(r.created_at);
+      return d >= start && d <= end;
+    });
+    const count = monthReviews.length;
+    const avg = count > 0 ? monthReviews.reduce((s: number, r: any) => s + r.rating, 0) / count : 0;
+    monthlyReviewsData.push({
+      month: format(date, 'MMM yyyy', { locale: fr }),
+      count,
+      avg: parseFloat(avg.toFixed(1)),
+    });
+  }
+
   // Export CSV
   const exportCSV = () => {
     const periodLabel = PERIOD_LABELS[period];
@@ -589,6 +608,51 @@ export function StatsDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Reviews Evolution Chart */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Star className="h-4 w-4 text-amber-500" />
+            Évolution des avis clients
+          </CardTitle>
+          <CardDescription>Nombre d'avis et note moyenne par mois (6 derniers mois)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-72">
+            {monthlyReviewsData.some(d => d.count > 0) ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyReviewsData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                  <YAxis yAxisId="left" tick={{ fontSize: 11 }} allowDecimals={false} className="fill-muted-foreground" label={{ value: 'Avis', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }} />
+                  <YAxis yAxisId="right" orientation="right" domain={[0, 5]} tick={{ fontSize: 11 }} className="fill-muted-foreground" label={{ value: 'Note', angle: 90, position: 'insideRight', style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    formatter={(value: number, name: string) => [
+                      name === 'Nombre d\'avis' ? value : `${value}/5`,
+                      name,
+                    ]}
+                  />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="count" name="Nombre d'avis" fill="hsl(271, 91%, 65%)" radius={[4, 4, 0, 0]} />
+                  <Line yAxisId="right" type="monotone" dataKey="avg" name="Note moyenne" stroke="hsl(45, 93%, 47%)" strokeWidth={2.5} dot={{ fill: 'hsl(45, 93%, 47%)', r: 5 }} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                Aucun avis sur cette période
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Quick stats summary */}
       <Card>
