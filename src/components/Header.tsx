@@ -23,6 +23,7 @@ export function Header() {
     { href: "#agences", label: t.nav.agencies },
     { href: "#faq", label: t.nav.faq },
     { href: "#jobs", label: t.nav.jobs },
+    { href: "#avis", label: t.nav.reviews },
     { href: "#contact", label: t.nav.contact },
   ];
 
