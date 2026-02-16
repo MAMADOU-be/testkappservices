@@ -204,6 +204,7 @@ export function ServiceRequestsTable({ highlightId, onHighlightConsumed }: Servi
       toast({
         title: 'Notes sauvegardées',
       });
+      setSelectedRequest(null);
       loadRequests();
     }
     setIsUpdating(false);
@@ -231,6 +232,7 @@ export function ServiceRequestsTable({ highlightId, onHighlightConsumed }: Servi
         .eq('id', id);
       if (!error) {
         toast({ title: 'Rendez-vous supprimé' });
+        setSelectedRequest(null);
         loadRequests();
       }
       return;
@@ -248,6 +250,7 @@ export function ServiceRequestsTable({ highlightId, onHighlightConsumed }: Servi
       toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de planifier le rendez-vous' });
     } else {
       toast({ title: '📅 Rendez-vous planifié', description: `Le ${format(dt, 'dd/MM/yyyy à HH:mm', { locale: fr })}` });
+      setSelectedRequest(null);
       loadRequests();
     }
     setIsUpdating(false);
