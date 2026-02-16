@@ -102,32 +102,39 @@ export function Recruitment() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('job_applications').insert({
-        first_name: data.prenom,
-        last_name: data.nom,
-        street: data.rue,
-        house_number: data.numero,
-        postal_code: data.codePostal,
-        city: data.localite,
-        phone: data.telephone,
-        email: data.email,
-        employment_type: data.emploi,
-        has_clientele: data.clientele,
-        transport: data.transport,
-        plan_impulsion: data.planImpulsion,
-        message: data.message || null,
+      const response = await supabase.functions.invoke('submit-job-application', {
+        body: {
+          first_name: data.prenom,
+          last_name: data.nom,
+          street: data.rue,
+          house_number: data.numero,
+          postal_code: data.codePostal,
+          city: data.localite,
+          phone: data.telephone,
+          email: data.email,
+          employment_type: data.emploi,
+          has_clientele: data.clientele,
+          transport: data.transport,
+          plan_impulsion: data.planImpulsion,
+          message: data.message || null,
+        },
       });
-      if (error) throw error;
+      if (response.error) throw response.error;
+      const result = response.data;
+      if (result?.error) throw new Error(result.error);
       setIsSubmitted(true);
       toast({
         title: t.recruitment.successTitle,
         description: t.recruitment.successDescription,
       });
-    } catch (error) {
+    } catch (error: any) {
+      const message = error?.message?.includes("Trop de candidatures")
+        ? "Trop de candidatures envoyées. Veuillez réessayer plus tard."
+        : "Une erreur est survenue. Veuillez réessayer.";
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        description: message,
       });
     } finally {
       setIsSubmitting(false);
