@@ -120,6 +120,7 @@ export function JobApplicationsTable({ highlightId, onHighlightConsumed }: JobAp
       toast({ variant: 'destructive', title: 'Erreur' });
     } else {
       toast({ title: 'Notes sauvegardées' });
+      setSelectedApp(null);
       loadApplications();
     }
     setIsUpdating(false);
