@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -51,12 +51,18 @@ const statusConfig: Record<string, { label: string; color: string; icon: typeof 
   rejected: { label: 'Refusée', color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
 };
 
-export function JobApplicationsTable() {
+interface JobApplicationsTableProps {
+  highlightId?: string | null;
+  onHighlightConsumed?: () => void;
+}
+
+export function JobApplicationsTable({ highlightId, onHighlightConsumed }: JobApplicationsTableProps) {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [notes, setNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<JobApplication | null>(null);
   const { toast } = useToast();
 
   const loadApplications = async () => {
@@ -82,6 +88,18 @@ export function JobApplicationsTable() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
+
+  // Auto-open detail when navigating from notification
+  useEffect(() => {
+    if (highlightId && applications.length > 0) {
+      const target = applications.find(a => a.id === highlightId);
+      if (target) {
+        setSelectedApp(target);
+        setNotes(target.notes || '');
+        onHighlightConsumed?.();
+      }
+    }
+  }, [highlightId, applications]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     setIsUpdating(true);
@@ -262,68 +280,9 @@ export function JobApplicationsTable() {
                         </Select>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" onClick={() => setNotes(app.notes || '')}>
-                              <Eye className="h-4 w-4 mr-1" />Détails
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>Candidature de {app.first_name} {app.last_name}</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-6 mt-4">
-                              <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                  <div>
-                                    <h4 className="font-medium flex items-center gap-2 mb-2"><User className="h-4 w-4" />Coordonnées</h4>
-                                    <div className="text-sm space-y-1 text-muted-foreground">
-                                      <p>{app.first_name} {app.last_name}</p>
-                                      <p className="flex items-center gap-1"><Phone className="h-3 w-3" />{app.phone}</p>
-                                      <p className="flex items-center gap-1"><Mail className="h-3 w-3" />{app.email}</p>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium flex items-center gap-2 mb-2"><MapPin className="h-4 w-4" />Adresse</h4>
-                                    <div className="text-sm text-muted-foreground">
-                                      <p>{app.street} {app.house_number}</p>
-                                      <p>{app.postal_code} {app.city}</p>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="space-y-4">
-                                  <div>
-                                    <h4 className="font-medium flex items-center gap-2 mb-2"><Briefcase className="h-4 w-4" />Candidature</h4>
-                                    <div className="text-sm space-y-1 text-muted-foreground">
-                                      <p><strong>Emploi :</strong> {app.employment_type}</p>
-                                      <p><strong>Clientèle :</strong> {app.has_clientele}</p>
-                                      <p className="flex items-center gap-1"><Car className="h-3 w-3" /><strong>Transport :</strong> {app.transport}</p>
-                                      <p><strong>Plan Impulsion :</strong> {app.plan_impulsion}</p>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium mb-2">Statut</h4>
-                                    {getStatusBadge(app.status)}
-                                  </div>
-                                </div>
-                              </div>
-                              {app.message && (
-                                <div>
-                                  <h4 className="font-medium mb-2">Message</h4>
-                                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">{app.message}</p>
-                                </div>
-                              )}
-                              <div>
-                                <h4 className="font-medium mb-2">Notes internes</h4>
-                                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ajouter des notes..." className="min-h-[100px]" />
-                                <Button className="mt-2" size="sm" onClick={() => updateNotes(app.id)} disabled={isUpdating}>
-                                  {isUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                                  Sauvegarder
-                                </Button>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedApp(app); setNotes(app.notes || ''); }}>
+                          <Eye className="h-4 w-4 mr-1" />Détails
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -333,6 +292,68 @@ export function JobApplicationsTable() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!selectedApp} onOpenChange={(open) => { if (!open) setSelectedApp(null); }}>
+        <DialogContent className="max-w-2xl">
+          {selectedApp && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Candidature de {selectedApp.first_name} {selectedApp.last_name}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6 mt-4">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium flex items-center gap-2 mb-2"><User className="h-4 w-4" />Coordonnées</h4>
+                      <div className="text-sm space-y-1 text-muted-foreground">
+                        <p>{selectedApp.first_name} {selectedApp.last_name}</p>
+                        <p className="flex items-center gap-1"><Phone className="h-3 w-3" />{selectedApp.phone}</p>
+                        <p className="flex items-center gap-1"><Mail className="h-3 w-3" />{selectedApp.email}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium flex items-center gap-2 mb-2"><MapPin className="h-4 w-4" />Adresse</h4>
+                      <div className="text-sm text-muted-foreground">
+                        <p>{selectedApp.street} {selectedApp.house_number}</p>
+                        <p>{selectedApp.postal_code} {selectedApp.city}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium flex items-center gap-2 mb-2"><Briefcase className="h-4 w-4" />Candidature</h4>
+                      <div className="text-sm space-y-1 text-muted-foreground">
+                        <p><strong>Emploi :</strong> {selectedApp.employment_type}</p>
+                        <p><strong>Clientèle :</strong> {selectedApp.has_clientele}</p>
+                        <p className="flex items-center gap-1"><Car className="h-3 w-3" /><strong>Transport :</strong> {selectedApp.transport}</p>
+                        <p><strong>Plan Impulsion :</strong> {selectedApp.plan_impulsion}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Statut</h4>
+                      {getStatusBadge(selectedApp.status)}
+                    </div>
+                  </div>
+                </div>
+                {selectedApp.message && (
+                  <div>
+                    <h4 className="font-medium mb-2">Message</h4>
+                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">{selectedApp.message}</p>
+                  </div>
+                )}
+                <div>
+                  <h4 className="font-medium mb-2">Notes internes</h4>
+                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ajouter des notes..." className="min-h-[100px]" />
+                  <Button className="mt-2" size="sm" onClick={() => updateNotes(selectedApp.id)} disabled={isUpdating}>
+                    {isUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Sauvegarder
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
