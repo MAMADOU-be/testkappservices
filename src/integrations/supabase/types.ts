@@ -447,16 +447,6 @@ export type Database = {
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_auth_email: { Args: never; Returns: string }
-      get_public_testimonials: {
-        Args: never
-        Returns: {
-          city: string
-          comment: string
-          created_at: string
-          first_name: string
-          rating: number
-        }[]
-      }
       get_referral_stats: { Args: { _user_id: string }; Returns: Json }
       get_user_roles: {
         Args: { _user_id: string }

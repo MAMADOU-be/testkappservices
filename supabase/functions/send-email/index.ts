@@ -4,14 +4,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-function escapeHtml(str: string): string {
-  if (!str) return '';
-  return str.replace(/[&<>"']/g, (m) => {
-    const map: Record<string, string> = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
-    return map[m] || m;
-  });
-}
-
 interface EmailPayload {
   to: string;
   subject: string;
@@ -72,16 +64,16 @@ function serviceRequestConfirmationEmail(data: {
           <h1 style="color: white; margin: 0; font-size: 24px;">KAP Services</h1>
         </div>
         <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
-          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${escapeHtml(data.first_name)} ${escapeHtml(data.last_name)},</h2>
+          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${data.first_name} ${data.last_name},</h2>
           <p style="color: #475569; line-height: 1.6;">
             Nous avons bien reçu votre demande de service et nous vous en remercions ! 
             Voici un récapitulatif :
           </p>
           <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Service</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${escapeHtml(data.service_type)}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Fréquence</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${escapeHtml(data.frequency)}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Ville</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${escapeHtml(data.city)}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Service</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.service_type}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Fréquence</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.frequency}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Ville</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.city}</td></tr>
             </table>
           </div>
           <p style="color: #475569; line-height: 1.6;">
@@ -133,10 +125,10 @@ function staffNotificationEmail(data: {
         <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
           <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #64748b;">Nom</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${escapeHtml(data.first_name)} ${escapeHtml(data.last_name)}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b;">Email</td><td style="padding: 8px 0;"><a href="mailto:${escapeHtml(data.email)}" style="color: #2563eb;">${escapeHtml(data.email)}</a></td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b;">Téléphone</td><td style="padding: 8px 0;"><a href="tel:${escapeHtml(data.phone)}" style="color: #2563eb;">${escapeHtml(data.phone)}</a></td></tr>
-              ${data.details ? `<tr><td style="padding: 8px 0; color: #64748b; vertical-align: top;">Détails</td><td style="padding: 8px 0; color: #1e293b;">${escapeHtml(data.details)}</td></tr>` : ""}
+              <tr><td style="padding: 8px 0; color: #64748b;">Nom</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.first_name} ${data.last_name}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;">Email</td><td style="padding: 8px 0;"><a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a></td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;">Téléphone</td><td style="padding: 8px 0;"><a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a></td></tr>
+              ${data.details ? `<tr><td style="padding: 8px 0; color: #64748b; vertical-align: top;">Détails</td><td style="padding: 8px 0; color: #1e293b;">${data.details}</td></tr>` : ""}
             </table>
           </div>
           <p style="color: #475569; margin-top: 16px; text-align: center;">
@@ -169,8 +161,8 @@ function userNotificationEmail(data: {
           <h1 style="color: white; margin: 0; font-size: 24px;">KAP Services</h1>
         </div>
         <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
-          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${escapeHtml(data.user_name)},</h2>
-          <p style="color: #475569; line-height: 1.6;">${escapeHtml(data.details)}</p>
+          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${data.user_name},</h2>
+          <p style="color: #475569; line-height: 1.6;">${data.details}</p>
           <p style="color: #475569; line-height: 1.6;">
             Connectez-vous à votre <a href="https://testks.lovable.app/profile" style="color: #2563eb;">espace personnel</a> pour plus de détails.
           </p>

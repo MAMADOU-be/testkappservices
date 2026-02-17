@@ -71,21 +71,13 @@ Deno.serve(async (req) => {
         minute: "2-digit",
       });
 
-      const escapeHtml = (str: string): string => {
-        if (!str) return '';
-        return str.replace(/[&<>"']/g, (m) => {
-          const map: Record<string, string> = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
-          return map[m] || m;
-        });
-      };
-
       const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 24px;">⏰ Rappel de rendez-vous</h1>
           </div>
           <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
-            <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${escapeHtml(apt.first_name)} ${escapeHtml(apt.last_name)},</h2>
+            <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${apt.first_name} ${apt.last_name},</h2>
             <p style="color: #475569; line-height: 1.6;">
               Nous vous rappelons votre rendez-vous prévu <strong>demain</strong> :
             </p>
@@ -93,8 +85,8 @@ Deno.serve(async (req) => {
               <table style="width: 100%; border-collapse: collapse;">
                 <tr><td style="padding: 8px 0; color: #64748b;">📅 Date</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${formattedDate}</td></tr>
                 <tr><td style="padding: 8px 0; color: #64748b;">🕐 Heure</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${formattedTime}</td></tr>
-                <tr><td style="padding: 8px 0; color: #64748b;">🏠 Service</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${escapeHtml(apt.service_type)}</td></tr>
-                <tr><td style="padding: 8px 0; color: #64748b;">📍 Ville</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${escapeHtml(apt.city)}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">🏠 Service</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${apt.service_type}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">📍 Ville</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${apt.city}</td></tr>
               </table>
             </div>
             <p style="color: #475569; line-height: 1.6;">
