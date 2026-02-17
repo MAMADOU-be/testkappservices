@@ -17,41 +17,17 @@ export function Testimonials() {
 
   useEffect(() => {
     const load = async () => {
-      // Fetch top reviews
-      const { data: reviewsData } = await supabase
-        .from('reviews')
-        .select('rating, comment, created_at, service_request_id')
-        .gte('rating', 4)
-        .not('comment', 'is', null)
-        .order('rating', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(6);
+      const { data, error } = await supabase.rpc('get_public_testimonials');
 
-      if (!reviewsData || reviewsData.length === 0) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Fetch corresponding service requests for names/cities
-      const ids = reviewsData.map(r => r.service_request_id);
-      const { data: srData } = await supabase
-        .from('service_requests')
-        .select('id, first_name, city')
-        .in('id', ids);
-
-      const srMap = new Map((srData || []).map(sr => [sr.id, sr]));
-
-      const mapped: Review[] = reviewsData.map((r) => {
-        const sr = srMap.get(r.service_request_id);
-        return {
+      if (!error && data && data.length > 0) {
+        setReviews(data.map((r: any) => ({
           rating: r.rating,
-          comment: r.comment!,
+          comment: r.comment,
           created_at: r.created_at,
-          first_name: sr?.first_name || 'Client',
-          city: sr?.city || '',
-        };
-      });
-      setReviews(mapped);
+          first_name: r.first_name || 'Client',
+          city: r.city || '',
+        })));
+      }
       setIsLoading(false);
     };
     load();
