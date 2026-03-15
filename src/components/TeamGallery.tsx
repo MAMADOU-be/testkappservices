@@ -21,10 +21,10 @@ export function TeamGallery() {
     <ScrollAnimation animation="fade-up" delay={300} className="my-16">
       <div className="text-center mb-8">
         <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          {t.about?.teamGallery?.title ?? "Notre équipe à votre service"}
+          {(t.about as any)?.teamGallery?.title ?? "Notre équipe à votre service"}
         </h3>
         <p className="text-muted-foreground max-w-xl mx-auto">
-          {t.about?.teamGallery?.description ?? "Des encadrantes dévouées qui veillent à la qualité de nos prestations au quotidien."}
+          {(t.about as any)?.teamGallery?.description ?? "Des encadrantes dévouées qui veillent à la qualité de nos prestations au quotidien."}
         </p>
       </div>
 

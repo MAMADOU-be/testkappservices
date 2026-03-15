@@ -57,6 +57,8 @@ export function About() {
           </div>
         </ScrollAnimation>
 
+        <TeamGallery />
+
         <div ref={valuesRef} className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {values.map((value, index) => (
             <div key={value.title} className="bg-card rounded-2xl p-6 card-hover text-center" style={getStaggeredStyle(index)}>
