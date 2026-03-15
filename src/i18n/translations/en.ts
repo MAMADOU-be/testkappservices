@@ -47,6 +47,10 @@ export const en = {
       personalized: { title: "Personalised approach", description: "We take the time to meet you and understand your specific needs." },
       local: { title: "Local presence", description: "Present in Greater Charleroi, Thuin, Nivelles, Binche and many other municipalities." },
     },
+    teamGallery: {
+      title: "Our team at your service",
+      description: "Dedicated supervisors who ensure the quality of our services every day.",
+    },
     coverage: "Areas served:",
     coverageList: "Courcelles, Lobbes, Mont-sur-Marchienne, Greater Charleroi, Nalinnes, Ham-sur-Heure, Viesville, Thuin, Biercée, Anderlues, Nivelles, Binche...",
   },
