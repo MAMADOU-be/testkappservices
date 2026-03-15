@@ -50,6 +50,10 @@ export const fr = {
       personalized: { title: "Approche personnalisée", description: "Nous prenons le temps de vous rencontrer pour comprendre vos besoins spécifiques." },
       local: { title: "Ancrage local", description: "Présents dans le Grand Charleroi, Thuin, Nivelles, Binche et bien d'autres communes." },
     },
+    teamGallery: {
+      title: "Notre équipe à votre service",
+      description: "Des encadrantes dévouées qui veillent à la qualité de nos prestations au quotidien.",
+    },
     coverage: "Zone desservie :",
     coverageList: "Courcelles, Lobbes, Mont-sur-Marchienne, Grand Charleroi, Nalinnes, Ham-sur-Heure, Viesville, Thuin, Biercée, Anderlues, Nivelles, Binche...",
   },
