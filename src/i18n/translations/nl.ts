@@ -47,6 +47,10 @@ export const nl = {
       personalized: { title: "Persoonlijke aanpak", description: "Wij nemen de tijd om u te ontmoeten en uw specifieke behoeften te begrijpen." },
       local: { title: "Lokale verankering", description: "Aanwezig in Groot-Charleroi, Thuin, Nijvel, Binche en vele andere gemeenten." },
     },
+    teamGallery: {
+      title: "Ons team staat voor u klaar",
+      description: "Toegewijde teamleiders die dagelijks waken over de kwaliteit van onze diensten.",
+    },
     coverage: "Bediend gebied:",
     coverageList: "Courcelles, Lobbes, Mont-sur-Marchienne, Groot-Charleroi, Nalinnes, Ham-sur-Heure, Viesville, Thuin, Biercée, Anderlues, Nijvel, Binche...",
   },
