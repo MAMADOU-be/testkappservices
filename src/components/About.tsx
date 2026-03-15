@@ -1,6 +1,7 @@
 import { Building2, Users, Award, Heart } from "lucide-react";
 import { ScrollAnimation, useStaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { TeamGallery } from "./TeamGallery";
 
 export function About() {
   const { t } = useLanguage();
