@@ -1,5 +1,6 @@
+import { supabase } from "@/integrations/supabase/client";
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 interface NotifyUserParams {
   email: string;
@@ -17,26 +18,36 @@ interface NotifyStaffParams {
   details?: string;
 }
 
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 /** Fire-and-forget email to a specific user */
 export function notifyUser(params: NotifyUserParams) {
-  fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-    },
-    body: JSON.stringify({ template: "user_notification", data: params }),
-  }).catch((e) => console.warn("User notification email failed:", e));
+  getAuthHeaders().then(headers =>
+    fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ template: "user_notification", data: params }),
+    })
+  ).catch((e) => console.warn("User notification email failed:", e));
 }
 
 /** Fire-and-forget email to staff */
 export function notifyStaff(params: NotifyStaffParams) {
-  fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-    },
-    body: JSON.stringify({ template: "staff_notification", data: params }),
-  }).catch((e) => console.warn("Staff notification email failed:", e));
+  getAuthHeaders().then(headers =>
+    fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ template: "staff_notification", data: params }),
+    })
+  ).catch((e) => console.warn("Staff notification email failed:", e));
 }
