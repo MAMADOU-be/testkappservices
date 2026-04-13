@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -40,12 +42,57 @@ async function sendEmail(payload: EmailPayload): Promise<{ success: boolean; err
     return { success: false, error: `SendGrid API error: ${response.status}` };
   }
 
-  // SendGrid returns 202 with empty body on success
   if (response.body) {
     await response.text();
   }
 
   return { success: true };
+}
+
+/**
+ * Verify the caller is authenticated OR is an internal edge function call.
+ * Internal calls use the service role key as Authorization bearer.
+ * Returns: { allowed: true } or { allowed: false, response: Response }
+ */
+async function verifyAccess(req: Request): Promise<{ allowed: boolean; response?: Response }> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return {
+      allowed: false,
+      response: new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }),
+    };
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+
+  // Allow internal server-to-server calls using service role key
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (serviceRoleKey && token === serviceRoleKey) {
+    return { allowed: true };
+  }
+
+  // Otherwise verify as a user JWT
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
+    return {
+      allowed: false,
+      response: new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }),
+    };
+  }
+
+  return { allowed: true };
 }
 
 // Email templates
@@ -190,6 +237,12 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const access = await verifyAccess(req);
+    if (!access.allowed) {
+      return access.response!;
+    }
+
     const body = await req.json();
     const { template, data } = body;
 
@@ -210,15 +263,10 @@ Deno.serve(async (req) => {
         to = data.email;
         break;
       default:
-        if (body.to && body.subject && body.html) {
-          emailContent = { subject: body.subject, html: body.html };
-          to = body.to;
-        } else {
-          return new Response(JSON.stringify({ error: "Unknown template" }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
+        return new Response(JSON.stringify({ error: "Unknown template" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
     }
 
     const result = await sendEmail({ to, ...emailContent });
@@ -231,7 +279,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log(`Email sent: ${template || "custom"} -> ${to}`);
+    console.log(`Email sent: ${template} -> ${to}`);
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

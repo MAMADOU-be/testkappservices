@@ -288,12 +288,22 @@ export function StatsDashboard() {
     URL.revokeObjectURL(url);
   };
 
+  // HTML escape to prevent XSS in document.write
+  const escapeHtml = (str: string | number): string => {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
   // Export PDF (print)
   const exportPDF = () => {
-    const periodLabel = PERIOD_LABELS[period];
-    const statusRows = statusData.map(d => `<tr><td>${d.name}</td><td>${d.value}</td></tr>`).join('');
-    const typeRows = typeData.map(d => `<tr><td>${d.name}</td><td>${d.value}</td></tr>`).join('');
-    const empRows = employeeRatingsList.map(e => `<tr><td>${e.name}</td><td>${e.avg.toFixed(1)}/5</td><td>${e.count}</td></tr>`).join('');
+    const periodLabel = escapeHtml(PERIOD_LABELS[period]);
+    const statusRows = statusData.map(d => `<tr><td>${escapeHtml(d.name)}</td><td>${escapeHtml(d.value)}</td></tr>`).join('');
+    const typeRows = typeData.map(d => `<tr><td>${escapeHtml(d.name)}</td><td>${escapeHtml(d.value)}</td></tr>`).join('');
+    const empRows = employeeRatingsList.map(e => `<tr><td>${escapeHtml(e.name)}</td><td>${escapeHtml(e.avg.toFixed(1))}/5</td><td>${escapeHtml(e.count)}</td></tr>`).join('');
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Statistiques KAP Services</title>
       <style>
@@ -311,13 +321,13 @@ export function StatsDashboard() {
         @media print { body { padding: 20px; } }
       </style></head><body>
       <h1>📊 Rapport Statistiques – KAP Services</h1>
-      <div class="meta">Période : ${periodLabel} · Exporté le ${format(new Date(), 'dd/MM/yyyy à HH:mm', { locale: fr })}</div>
+      <div class="meta">Période : ${periodLabel} · Exporté le ${escapeHtml(format(new Date(), 'dd/MM/yyyy à HH:mm', { locale: fr }))}</div>
       <div class="kpis">
-        <div class="kpi"><div class="kpi-val">${totalRequests}</div><div class="kpi-label">Demandes</div></div>
-        <div class="kpi"><div class="kpi-val">${conversionRate}%</div><div class="kpi-label">Conversion</div></div>
-        <div class="kpi"><div class="kpi-val">${totalJobs}</div><div class="kpi-label">Candidatures</div></div>
-        <div class="kpi"><div class="kpi-val">${totalMessages}</div><div class="kpi-label">Messages (${unreadMessages} non lus)</div></div>
-        <div class="kpi"><div class="kpi-val">${avgRating > 0 ? avgRating.toFixed(1) : '—'}/5</div><div class="kpi-label">${totalReviews} avis</div></div>
+        <div class="kpi"><div class="kpi-val">${escapeHtml(totalRequests)}</div><div class="kpi-label">Demandes</div></div>
+        <div class="kpi"><div class="kpi-val">${escapeHtml(conversionRate)}%</div><div class="kpi-label">Conversion</div></div>
+        <div class="kpi"><div class="kpi-val">${escapeHtml(totalJobs)}</div><div class="kpi-label">Candidatures</div></div>
+        <div class="kpi"><div class="kpi-val">${escapeHtml(totalMessages)}</div><div class="kpi-label">Messages (${escapeHtml(unreadMessages)} non lus)</div></div>
+        <div class="kpi"><div class="kpi-val">${avgRating > 0 ? escapeHtml(avgRating.toFixed(1)) : '—'}/5</div><div class="kpi-label">${escapeHtml(totalReviews)} avis</div></div>
       </div>
       <h2>Répartition par statut</h2>
       <table><tr><th>Statut</th><th>Nombre</th></tr>${statusRows}</table>
