@@ -386,4 +386,19 @@ export const nl = {
     description: "Huishoudtips, bedrijfsnieuws en trucs voor een vlekkeloos interieur.",
     readMore: "Lees meer",
   },
+
+  cookies: {
+    title: "Wij respecteren uw privacy",
+    description: "Deze site gebruikt essentiële cookies voor de werking en analytische cookies om uw ervaring te verbeteren. U kunt optionele cookies accepteren of weigeren.",
+    acceptAll: "Alles accepteren",
+    rejectOptional: "Optionele weigeren",
+    showDetails: "Meer weten",
+    hideDetails: "Details verbergen",
+    necessaryTitle: "Noodzakelijke cookies",
+    necessaryDesc: "Vereist voor de goede werking van de site (sessie, taalvoorkeuren). Altijd actief.",
+    analyticsTitle: "Analytische cookies",
+    analyticsDesc: "Helpen ons begrijpen hoe u de site gebruikt, zodat we deze kunnen verbeteren. Geen persoonlijke gegevens worden gedeeld met derden.",
+    learnMore: "Raadpleeg voor meer informatie ons",
+    privacyLink: "privacybeleid",
+  },
 };
