@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/i18n/LanguageContext";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { PageTracker } from "@/components/PageTracker";
+import { CookieConsent } from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -53,6 +54,7 @@ const App = () => (
             </BrowserRouter>
             <WhatsAppButton />
             <PageTracker />
+            <CookieConsent />
           </ProfileProvider>
         </AuthProvider>
       </LanguageProvider>

@@ -386,4 +386,19 @@ export const en = {
     description: "Housekeeping tips, company news and tricks for a spotless home.",
     readMore: "Read more",
   },
+
+  cookies: {
+    title: "We respect your privacy",
+    description: "This site uses essential cookies for functionality and analytics cookies to improve your experience. You can accept or reject optional cookies.",
+    acceptAll: "Accept all",
+    rejectOptional: "Reject optional",
+    showDetails: "Learn more",
+    hideDetails: "Hide details",
+    necessaryTitle: "Necessary cookies",
+    necessaryDesc: "Required for the site to function properly (session, language preferences). Always active.",
+    analyticsTitle: "Analytics cookies",
+    analyticsDesc: "Help us understand how you use the site so we can improve it. No personal data is shared with third parties.",
+    learnMore: "For more information, see our",
+    privacyLink: "privacy policy",
+  },
 };

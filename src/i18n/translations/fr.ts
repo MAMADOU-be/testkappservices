@@ -401,4 +401,19 @@ export const fr = {
     description: "Conseils ménagers, nouvelles de l'entreprise et astuces pour un intérieur impeccable.",
     readMore: "Lire la suite",
   },
+
+  cookies: {
+    title: "Nous respectons votre vie privée",
+    description: "Ce site utilise des cookies essentiels au fonctionnement et des cookies d'analyse pour améliorer votre expérience. Vous pouvez accepter ou refuser les cookies optionnels.",
+    acceptAll: "Tout accepter",
+    rejectOptional: "Refuser les optionnels",
+    showDetails: "En savoir plus",
+    hideDetails: "Masquer les détails",
+    necessaryTitle: "Cookies nécessaires",
+    necessaryDesc: "Indispensables au fonctionnement du site (session, préférences de langue). Toujours actifs.",
+    analyticsTitle: "Cookies d'analyse",
+    analyticsDesc: "Nous aident à comprendre comment vous utilisez le site afin de l'améliorer. Aucune donnée personnelle n'est partagée avec des tiers.",
+    learnMore: "Pour en savoir plus, consultez notre",
+    privacyLink: "politique de confidentialité",
+  },
 };
