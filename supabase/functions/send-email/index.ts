@@ -51,10 +51,14 @@ async function sendEmail(payload: EmailPayload): Promise<{ success: boolean; err
 
 /**
  * Verify the caller is authenticated OR is an internal edge function call.
- * Internal calls use the service role key as Authorization bearer.
- * Returns: { allowed: true } or { allowed: false, response: Response }
+ * Returns: { allowed: true, role: 'service'|'admin'|'employee'|'user', user? } or { allowed: false, response }
  */
-async function verifyAccess(req: Request): Promise<{ allowed: boolean; response?: Response }> {
+async function verifyAccess(req: Request): Promise<{
+  allowed: boolean;
+  response?: Response;
+  role?: "service" | "admin" | "employee" | "user";
+  userEmail?: string;
+}> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return {
@@ -71,7 +75,7 @@ async function verifyAccess(req: Request): Promise<{ allowed: boolean; response?
   // Allow internal server-to-server calls using service role key
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (serviceRoleKey && token === serviceRoleKey) {
-    return { allowed: true };
+    return { allowed: true, role: "service" };
   }
 
   // Otherwise verify as a user JWT
@@ -92,10 +96,39 @@ async function verifyAccess(req: Request): Promise<{ allowed: boolean; response?
     };
   }
 
-  return { allowed: true };
+  // Determine role
+  const admin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+  const { data: roles } = await admin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id);
+
+  const roleSet = new Set((roles ?? []).map((r: { role: string }) => r.role));
+  const role: "admin" | "employee" | "user" = roleSet.has("admin")
+    ? "admin"
+    : roleSet.has("employee")
+    ? "employee"
+    : "user";
+
+  return { allowed: true, role, userEmail: user.email };
 }
 
-// Email templates
+/** Strip HTML tags and escape entities to neutralize user-controlled content. */
+function sanitizeText(input: unknown): string {
+  if (input === null || input === undefined) return "";
+  return String(input)
+    .replace(/<[^>]*>/g, "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Email templates — all interpolated values are sanitized
 function serviceRequestConfirmationEmail(data: {
   first_name: string;
   last_name: string;
@@ -103,6 +136,11 @@ function serviceRequestConfirmationEmail(data: {
   frequency: string;
   city: string;
 }): { subject: string; html: string } {
+  const first = sanitizeText(data.first_name);
+  const last = sanitizeText(data.last_name);
+  const service = sanitizeText(data.service_type);
+  const frequency = sanitizeText(data.frequency);
+  const city = sanitizeText(data.city);
   return {
     subject: "✅ Confirmation de votre demande – KAP Services",
     html: `
@@ -111,24 +149,24 @@ function serviceRequestConfirmationEmail(data: {
           <h1 style="color: white; margin: 0; font-size: 24px;">KAP Services</h1>
         </div>
         <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
-          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${data.first_name} ${data.last_name},</h2>
+          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${first} ${last},</h2>
           <p style="color: #475569; line-height: 1.6;">
-            Nous avons bien reçu votre demande de service et nous vous en remercions ! 
+            Nous avons bien reçu votre demande de service et nous vous en remercions !
             Voici un récapitulatif :
           </p>
           <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Service</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.service_type}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Fréquence</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.frequency}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Ville</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.city}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Service</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${service}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Fréquence</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${frequency}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Ville</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${city}</td></tr>
             </table>
           </div>
           <p style="color: #475569; line-height: 1.6;">
-            Notre équipe va traiter votre demande dans les plus brefs délais. 
+            Notre équipe va traiter votre demande dans les plus brefs délais.
             Nous vous contacterons pour convenir d'un rendez-vous.
           </p>
           <p style="color: #475569; line-height: 1.6;">
-            Pour toute question, n'hésitez pas à nous appeler au 
+            Pour toute question, n'hésitez pas à nous appeler au
             <a href="tel:+3271455745" style="color: #2563eb; font-weight: 600;">071 45 57 45</a>.
           </p>
           <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
@@ -160,7 +198,12 @@ function staffNotificationEmail(data: {
     status_changed: "📋 Statut demande modifié",
   };
 
-  const label = typeLabels[data.type] || `📌 Notification: ${data.type}`;
+  const label = typeLabels[data.type] || `📌 Notification: ${sanitizeText(data.type)}`;
+  const first = sanitizeText(data.first_name);
+  const last = sanitizeText(data.last_name);
+  const email = sanitizeText(data.email);
+  const phone = sanitizeText(data.phone);
+  const details = data.details ? sanitizeText(data.details) : "";
 
   return {
     subject: label,
@@ -172,10 +215,10 @@ function staffNotificationEmail(data: {
         <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
           <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #64748b;">Nom</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.first_name} ${data.last_name}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b;">Email</td><td style="padding: 8px 0;"><a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a></td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b;">Téléphone</td><td style="padding: 8px 0;"><a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a></td></tr>
-              ${data.details ? `<tr><td style="padding: 8px 0; color: #64748b; vertical-align: top;">Détails</td><td style="padding: 8px 0; color: #1e293b;">${data.details}</td></tr>` : ""}
+              <tr><td style="padding: 8px 0; color: #64748b;">Nom</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${first} ${last}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;">Email</td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #2563eb;">${email}</a></td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;">Téléphone</td><td style="padding: 8px 0;"><a href="tel:${phone}" style="color: #2563eb;">${phone}</a></td></tr>
+              ${details ? `<tr><td style="padding: 8px 0; color: #64748b; vertical-align: top;">Détails</td><td style="padding: 8px 0; color: #1e293b;">${details}</td></tr>` : ""}
             </table>
           </div>
           <p style="color: #475569; margin-top: 16px; text-align: center;">
@@ -200,6 +243,9 @@ function userNotificationEmail(data: {
     welcome: "🎉 Bienvenue chez KAP Services",
   };
 
+  const userName = sanitizeText(data.user_name);
+  const details = sanitizeText(data.details);
+
   return {
     subject: eventLabels[data.event] || "Notification KAP Services",
     html: `
@@ -208,8 +254,8 @@ function userNotificationEmail(data: {
           <h1 style="color: white; margin: 0; font-size: 24px;">KAP Services</h1>
         </div>
         <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
-          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${data.user_name},</h2>
-          <p style="color: #475569; line-height: 1.6;">${data.details}</p>
+          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${userName},</h2>
+          <p style="color: #475569; line-height: 1.6;">${details}</p>
           <p style="color: #475569; line-height: 1.6;">
             Connectez-vous à votre <a href="https://testks.lovable.app/profile" style="color: #2563eb;">espace personnel</a> pour plus de détails.
           </p>
@@ -223,7 +269,6 @@ function userNotificationEmail(data: {
     `,
   };
 }
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -245,28 +290,53 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { template, data } = body;
+    const role = access.role!;
 
     let emailContent: { subject: string; html: string };
     let to: string;
 
     switch (template) {
       case "service_request_confirmation":
+        // Service or staff only — never callable by regular users to arbitrary recipients
+        if (role !== "service" && role !== "admin" && role !== "employee") {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
         emailContent = serviceRequestConfirmationEmail(data);
-        to = data.email;
+        to = String(data.email ?? "");
         break;
       case "staff_notification":
         emailContent = staffNotificationEmail(data);
         to = "jolooftech@gmail.com";
         break;
       case "user_notification":
+        // Restrict to service/staff. Regular users may only target themselves.
+        if (role !== "service" && role !== "admin" && role !== "employee") {
+          if (!access.userEmail || String(data.email ?? "").toLowerCase() !== access.userEmail.toLowerCase()) {
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
         emailContent = userNotificationEmail(data);
-        to = data.email;
+        to = String(data.email ?? "");
         break;
       default:
         return new Response(JSON.stringify({ error: "Unknown template" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
+    }
+
+    // Basic recipient email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      return new Response(JSON.stringify({ error: "Invalid recipient" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const result = await sendEmail({ to, ...emailContent });
