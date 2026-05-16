@@ -13,8 +13,14 @@ import { IroningRegistrationForm } from "@/components/IroningRegistrationForm";
 import { BlogSection } from "@/components/BlogSection";
 import { Testimonials } from "@/components/Testimonials";
 import { BackToTop } from "@/components/BackToTop";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const Index = () => {
+  usePageMeta({
+    title: "Kap Services | Titres-Services Charleroi & Liège",
+    description: "Agence agréée de titres-services à Courcelles, Mont-sur-Marchienne et Lobbes. Aide ménagère et repassage à domicile, service fiable et professionnel.",
+    canonical: "/",
+  });
   return (
     <div className="min-h-screen scroll-smooth">
       <Header />

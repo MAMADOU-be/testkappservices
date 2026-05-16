@@ -1,56 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Page d'accueil (priorité maximale) -->
   <url>
-    <loc>https://kap-services.be/</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://kapservices.lovable.app/</loc>
+    <lastmod>2026-05-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Pages importantes -->
   <url>
-    <loc>https://kap-services.be/</loc>
-    <lastmod>2026-02-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Pages légales -->
-  <url>
-    <loc>https://kap-services.be/mentions-legales</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://kapservices.lovable.app/mentions-legales</loc>
+    <lastmod>2026-05-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
-
   <url>
-    <loc>https://kap-services.be/politique-confidentialite</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://kapservices.lovable.app/confidentialite</loc>
+    <lastmod>2026-05-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
-
   <url>
-    <loc>https://kap-services.be/conditions-utilisation</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://kapservices.lovable.app/conditions-generales</loc>
+    <lastmod>2026-05-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
-  </url>
-
-  <!-- Page de recrutement -->
-  <url>
-    <loc>https://kap-services.be/</loc>
-    <lastmod>2026-02-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Page d'authentification (non indexée mais listée pour crawl) -->
-  <url>
-    <loc>https://kap-services.be/auth</loc>
-    <lastmod>2026-02-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
   </url>
 </urlset>

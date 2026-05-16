@@ -1,0 +1,12 @@
+# Kap Services
+
+> Agence agréée de titres-services à Courcelles, Mont-sur-Marchienne et Lobbes : aide ménagère et repassage à domicile.
+
+Kap Services est une société wallonne spécialisée dans les prestations de titres-services. Nous proposons l'aide ménagère, le repassage en atelier ou à domicile, et nous recrutons régulièrement des aides-ménagères dans la région de Charleroi.
+
+## Pages
+
+- [Accueil](/): Présentation de l'entreprise, services, agences, FAQ et formulaire de demande.
+- [Mentions légales](/mentions-legales): Informations légales sur Kap Services SRL.
+- [Politique de confidentialité](/confidentialite): Traitement des données personnelles et conformité RGPD.
+- [Conditions générales](/conditions-generales): Conditions d'utilisation du site et des services.

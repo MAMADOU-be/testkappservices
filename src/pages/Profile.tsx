@@ -35,8 +35,14 @@ import {
   Newspaper,
   Eye,
 } from 'lucide-react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const Profile = () => {
+  usePageMeta({
+    title: 'Mon espace | Kap Services',
+    description: 'Accédez à votre espace personnel Kap Services : suivi de vos demandes, parrainage et gestion de profil.',
+    canonical: '/profile',
+  });
   const { user, isLoading: authLoading, signOut } = useAuth();
   const { profile, roles, isLoading: profileLoading, hasAnyRole } = useProfile();
   const { unreadCount, markAllAsRead, loadUnreadCount } = useAdminNotifications();
