@@ -290,28 +290,53 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { template, data } = body;
+    const role = access.role!;
 
     let emailContent: { subject: string; html: string };
     let to: string;
 
     switch (template) {
       case "service_request_confirmation":
+        // Service or staff only — never callable by regular users to arbitrary recipients
+        if (role !== "service" && role !== "admin" && role !== "employee") {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
         emailContent = serviceRequestConfirmationEmail(data);
-        to = data.email;
+        to = String(data.email ?? "");
         break;
       case "staff_notification":
         emailContent = staffNotificationEmail(data);
         to = "jolooftech@gmail.com";
         break;
       case "user_notification":
+        // Restrict to service/staff. Regular users may only target themselves.
+        if (role !== "service" && role !== "admin" && role !== "employee") {
+          if (!access.userEmail || String(data.email ?? "").toLowerCase() !== access.userEmail.toLowerCase()) {
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
         emailContent = userNotificationEmail(data);
-        to = data.email;
+        to = String(data.email ?? "");
         break;
       default:
         return new Response(JSON.stringify({ error: "Unknown template" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
+    }
+
+    // Basic recipient email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      return new Response(JSON.stringify({ error: "Invalid recipient" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const result = await sendEmail({ to, ...emailContent });
