@@ -6,7 +6,7 @@ interface PageMeta {
   canonical?: string;
 }
 
-const BASE_URL = 'https://kap-services.be';
+const BASE_URL = 'https://www.kap-services.be';
 
 export function usePageMeta({ title, description, canonical }: PageMeta) {
   useEffect(() => {
@@ -59,7 +59,7 @@ export function usePageMeta({ title, description, canonical }: PageMeta) {
 
     // Cleanup: restore defaults on unmount
     return () => {
-      document.title = 'Kap Services | Titres-Services Liège, Mont-sur-Marchienne, Lobbes | Aide ménagère & Repassage';
+      document.title = 'Kap Services | Titres-Services Charleroi & Liège';
     };
   }, [title, description, canonical]);
 }
