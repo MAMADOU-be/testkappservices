@@ -128,7 +128,7 @@ function sanitizeText(input: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
-// Email templates
+// Email templates — all interpolated values are sanitized
 function serviceRequestConfirmationEmail(data: {
   first_name: string;
   last_name: string;
@@ -136,6 +136,11 @@ function serviceRequestConfirmationEmail(data: {
   frequency: string;
   city: string;
 }): { subject: string; html: string } {
+  const first = sanitizeText(data.first_name);
+  const last = sanitizeText(data.last_name);
+  const service = sanitizeText(data.service_type);
+  const frequency = sanitizeText(data.frequency);
+  const city = sanitizeText(data.city);
   return {
     subject: "✅ Confirmation de votre demande – KAP Services",
     html: `
@@ -144,24 +149,24 @@ function serviceRequestConfirmationEmail(data: {
           <h1 style="color: white; margin: 0; font-size: 24px;">KAP Services</h1>
         </div>
         <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
-          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${data.first_name} ${data.last_name},</h2>
+          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${first} ${last},</h2>
           <p style="color: #475569; line-height: 1.6;">
-            Nous avons bien reçu votre demande de service et nous vous en remercions ! 
+            Nous avons bien reçu votre demande de service et nous vous en remercions !
             Voici un récapitulatif :
           </p>
           <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Service</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.service_type}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Fréquence</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.frequency}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Ville</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.city}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Service</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${service}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Fréquence</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${frequency}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b; font-size: 14px;">Ville</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${city}</td></tr>
             </table>
           </div>
           <p style="color: #475569; line-height: 1.6;">
-            Notre équipe va traiter votre demande dans les plus brefs délais. 
+            Notre équipe va traiter votre demande dans les plus brefs délais.
             Nous vous contacterons pour convenir d'un rendez-vous.
           </p>
           <p style="color: #475569; line-height: 1.6;">
-            Pour toute question, n'hésitez pas à nous appeler au 
+            Pour toute question, n'hésitez pas à nous appeler au
             <a href="tel:+3271455745" style="color: #2563eb; font-weight: 600;">071 45 57 45</a>.
           </p>
           <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
@@ -193,7 +198,12 @@ function staffNotificationEmail(data: {
     status_changed: "📋 Statut demande modifié",
   };
 
-  const label = typeLabels[data.type] || `📌 Notification: ${data.type}`;
+  const label = typeLabels[data.type] || `📌 Notification: ${sanitizeText(data.type)}`;
+  const first = sanitizeText(data.first_name);
+  const last = sanitizeText(data.last_name);
+  const email = sanitizeText(data.email);
+  const phone = sanitizeText(data.phone);
+  const details = data.details ? sanitizeText(data.details) : "";
 
   return {
     subject: label,
@@ -205,10 +215,10 @@ function staffNotificationEmail(data: {
         <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
           <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #64748b;">Nom</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${data.first_name} ${data.last_name}</td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b;">Email</td><td style="padding: 8px 0;"><a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a></td></tr>
-              <tr><td style="padding: 8px 0; color: #64748b;">Téléphone</td><td style="padding: 8px 0;"><a href="tel:${data.phone}" style="color: #2563eb;">${data.phone}</a></td></tr>
-              ${data.details ? `<tr><td style="padding: 8px 0; color: #64748b; vertical-align: top;">Détails</td><td style="padding: 8px 0; color: #1e293b;">${data.details}</td></tr>` : ""}
+              <tr><td style="padding: 8px 0; color: #64748b;">Nom</td><td style="padding: 8px 0; color: #1e293b; font-weight: 600;">${first} ${last}</td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;">Email</td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #2563eb;">${email}</a></td></tr>
+              <tr><td style="padding: 8px 0; color: #64748b;">Téléphone</td><td style="padding: 8px 0;"><a href="tel:${phone}" style="color: #2563eb;">${phone}</a></td></tr>
+              ${details ? `<tr><td style="padding: 8px 0; color: #64748b; vertical-align: top;">Détails</td><td style="padding: 8px 0; color: #1e293b;">${details}</td></tr>` : ""}
             </table>
           </div>
           <p style="color: #475569; margin-top: 16px; text-align: center;">
@@ -233,6 +243,9 @@ function userNotificationEmail(data: {
     welcome: "🎉 Bienvenue chez KAP Services",
   };
 
+  const userName = sanitizeText(data.user_name);
+  const details = sanitizeText(data.details);
+
   return {
     subject: eventLabels[data.event] || "Notification KAP Services",
     html: `
@@ -241,8 +254,8 @@ function userNotificationEmail(data: {
           <h1 style="color: white; margin: 0; font-size: 24px;">KAP Services</h1>
         </div>
         <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
-          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${data.user_name},</h2>
-          <p style="color: #475569; line-height: 1.6;">${data.details}</p>
+          <h2 style="color: #1e293b; margin-top: 0;">Bonjour ${userName},</h2>
+          <p style="color: #475569; line-height: 1.6;">${details}</p>
           <p style="color: #475569; line-height: 1.6;">
             Connectez-vous à votre <a href="https://testks.lovable.app/profile" style="color: #2563eb;">espace personnel</a> pour plus de détails.
           </p>
@@ -256,7 +269,6 @@ function userNotificationEmail(data: {
     `,
   };
 }
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
