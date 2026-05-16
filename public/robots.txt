@@ -9,7 +9,7 @@ Disallow: /node_modules
 Disallow: /dist
 
 # Référence au sitemap XML
-Sitemap: https://kap-services.be/sitemap.xml
+Sitemap: https://kapservices.lovable.app/sitemap.xml
 
 # Délai de crawl (en secondes)
 Crawl-delay: 1
