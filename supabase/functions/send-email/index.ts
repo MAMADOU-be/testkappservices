@@ -51,10 +51,14 @@ async function sendEmail(payload: EmailPayload): Promise<{ success: boolean; err
 
 /**
  * Verify the caller is authenticated OR is an internal edge function call.
- * Internal calls use the service role key as Authorization bearer.
- * Returns: { allowed: true } or { allowed: false, response: Response }
+ * Returns: { allowed: true, role: 'service'|'admin'|'employee'|'user', user? } or { allowed: false, response }
  */
-async function verifyAccess(req: Request): Promise<{ allowed: boolean; response?: Response }> {
+async function verifyAccess(req: Request): Promise<{
+  allowed: boolean;
+  response?: Response;
+  role?: "service" | "admin" | "employee" | "user";
+  userEmail?: string;
+}> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return {
@@ -71,7 +75,7 @@ async function verifyAccess(req: Request): Promise<{ allowed: boolean; response?
   // Allow internal server-to-server calls using service role key
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (serviceRoleKey && token === serviceRoleKey) {
-    return { allowed: true };
+    return { allowed: true, role: "service" };
   }
 
   // Otherwise verify as a user JWT
@@ -92,7 +96,36 @@ async function verifyAccess(req: Request): Promise<{ allowed: boolean; response?
     };
   }
 
-  return { allowed: true };
+  // Determine role
+  const admin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+  const { data: roles } = await admin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id);
+
+  const roleSet = new Set((roles ?? []).map((r: { role: string }) => r.role));
+  const role: "admin" | "employee" | "user" = roleSet.has("admin")
+    ? "admin"
+    : roleSet.has("employee")
+    ? "employee"
+    : "user";
+
+  return { allowed: true, role, userEmail: user.email };
+}
+
+/** Strip HTML tags and escape entities to neutralize user-controlled content. */
+function sanitizeText(input: unknown): string {
+  if (input === null || input === undefined) return "";
+  return String(input)
+    .replace(/<[^>]*>/g, "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // Email templates
